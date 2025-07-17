@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { LoginScreen } from "@/components/login-screen";
+import { LoginScreen } from "@/components/shared/login-screen";
 
 export default function Home() {
   const router = useRouter();
