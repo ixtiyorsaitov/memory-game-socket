@@ -145,7 +145,7 @@ export function MainLobby({ playerName, allowInvites, onInvitePreferenceChange }
                       <User className="h-4 w-4" />
                       <span className="font-medium">{user.name}</span>
                       {!user.allowInvites && (
-                        <ShieldOff className="h-3 w-3 text-red-500" title="Not accepting invites" />
+                        <ShieldOff className="h-3 w-3 text-red-500" />
                       )}
                     </div>
                     <div className="flex items-center gap-2">
