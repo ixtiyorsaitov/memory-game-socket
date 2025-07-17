@@ -7,24 +7,11 @@ import { useAuth } from "@/hooks/use-user";
 export default function LobbyPage() {
   const { user, setUser } = useAuth();
 
-  useEffect(() => {
-    const playerName = localStorage.getItem("playerName");
-    const allowInvites = localStorage.getItem("allowInvites");
-
-    if (playerName) {
-      setUser({
-        name: playerName,
-        allowInvites: allowInvites === "false" ? false : true,
-      });
-    }
-  }, []);
-
   if (!user.name) return null; // redirect ni kutadi
 
   return (
     <MainLobby
       playerName={user.name}
-      allowInvites={user.allowInvites}
       onInvitePreferenceChange={(allow) => {
         setUser({ ...user, allowInvites: allow });
         localStorage.setItem("allowInvites", allow.toString());
