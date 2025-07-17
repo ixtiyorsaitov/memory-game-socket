@@ -6,14 +6,17 @@ import { MainLobby } from "@/components/shared/main-lobby";
 
 export default function LobbyPage() {
   const [playerName, setPlayerName] = useState("");
+  const [allowInvites, setAllowInvites] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const savedName = localStorage.getItem("playerName");
+    const savedInvitePreference = localStorage.getItem("allowInvites");
     if (!savedName) {
       router.push("/");
     } else {
       setPlayerName(savedName);
+      setAllowInvites(savedInvitePreference !== "false");
     }
   }, [router]);
 
@@ -23,6 +26,11 @@ export default function LobbyPage() {
     } else {
       router.push("/game/online");
     }
+  };
+
+  const handleInvitePreferenceChange = (allow: boolean) => {
+    setAllowInvites(allow);
+    localStorage.setItem("allowInvites", allow.toString());
   };
 
   if (!playerName) {
@@ -36,7 +44,9 @@ export default function LobbyPage() {
   return (
     <MainLobby
       playerName={playerName}
-      //   onGameModeSelect={handleGameModeSelect}
+      // onGameModeSelect={handleGameModeSelect}
+      allowInvites={allowInvites}
+      onInvitePreferenceChange={handleInvitePreferenceChange}
     />
   );
 }
