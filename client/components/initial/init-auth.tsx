@@ -8,14 +8,15 @@ export default function InitAuth() {
 
   useEffect(() => {
     const name = localStorage.getItem("playerName");
+    const allowInvites = localStorage.getItem("allowInvites") || true;
     if (name && name.trim() !== "") {
       setUser({
         ...user,
         name,
-        allowInvites: true,
+        allowInvites: allowInvites === "false" ? false : true,
       });
     }
   }, [setUser]);
 
-  return null; // bu component faqat init uchun
+  return null;
 }

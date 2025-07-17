@@ -23,7 +23,6 @@ import ReceivingAlert from "@/app/(root)/_components/receiving-alert";
 
 interface MainLobbyProps {
   playerName: string | null;
-  allowInvites: boolean;
   onInvitePreferenceChange: (allow: boolean) => void;
 }
 
@@ -38,7 +37,6 @@ interface MainLobbyProps {
 
 export function MainLobby({
   playerName,
-  allowInvites,
   onInvitePreferenceChange,
 }: MainLobbyProps) {
   const [sentInvites, setSentInvites] = useState<number[]>([]);
@@ -125,7 +123,7 @@ export function MainLobby({
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                {allowInvites ? (
+                {user.allowInvites ? (
                   <Shield className="h-5 w-5 text-green-600" />
                 ) : (
                   <ShieldOff className="h-5 w-5 text-red-600" />
@@ -140,14 +138,14 @@ export function MainLobby({
               <div className="flex items-center space-x-2">
                 <Switch
                   id="allow-invites"
-                  checked={allowInvites}
+                  checked={user.allowInvites}
                   onCheckedChange={onInvitePreferenceChange}
                 />
                 <Label
                   htmlFor="allow-invites"
                   className="flex items-center gap-2"
                 >
-                  {allowInvites ? (
+                  {user.allowInvites ? (
                     <>
                       <Shield className="h-4 w-4 text-green-600" />
                       Allow game invitations
@@ -161,7 +159,7 @@ export function MainLobby({
                 </Label>
               </div>
               <p className="text-sm text-muted-foreground mt-2">
-                {allowInvites
+                {user.allowInvites
                   ? "Other players can send you game invitations"
                   : "You won't receive any game invitations from other players"}
               </p>
@@ -215,55 +213,58 @@ export function MainLobby({
 
                 {/* Online Users List */}
                 <div className="space-y-3">
-                  {onlineUsers.map((item) => (
-                    <div
-                      key={item.socketId}
-                      className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
-                    >
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        <span className="font-medium">{item.name}</span>
-                        {!item.allowInvites && (
-                          <ShieldOff className="h-3 w-3 text-red-500" />
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant={
-                            user.status === "online" ? "default" : "secondary"
-                          }
-                          className="text-xs"
-                        >
-                          {item.status}
-                        </Badge>
-                        {item.status === "online" && item.allowInvites && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleInviteUser(item.socketId)}
-                            // disabled={sentInvites.includes(user.socketId)}
-                          >
-                            {/* <>
-                              {sentInvites.includes(user.socketId)
-                                ? "Invited"
-                                : "Invite"}
-                            </> */}
-                            Invite
-                          </Button>
-                        )}
-                        {item.status === "online" &&
-                          item.name !== playerName &&
-                          !item.allowInvites && (
-                            <Badge
-                              variant="outline"
-                              className="text-xs text-red-600"
-                            >
-                              Private
-                            </Badge>
+                  {onlineUsers.map((item) => {
+                    // console.log("itemid", item.socketId);
+                    // console.log("userid", user.socketId);
+                    console.log(item.socketId === user.socketId);
+
+                    return (
+                      <div
+                        key={item.socketId}
+                        className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
+                      >
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          <span className="font-medium">{item.name}</span>
+                          {!item.allowInvites && (
+                            <ShieldOff className="h-3 w-3 text-red-500" />
                           )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant={
+                              user.status === "online" ? "default" : "secondary"
+                            }
+                            className="text-xs"
+                          >
+                            {item.status}
+                          </Badge>
+                          {item.status === "online" &&
+                            item.allowInvites &&
+                            item.socketId !== user.socketId && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleInviteUser(item.socketId)}
+                              >
+                                {item.socketId === user.socketId
+                                  ? "you"
+                                  : "invite"}
+                              </Button>
+                            )}
+                          {item.status === "online" &&
+                            item.allowInvites === false && (
+                              <Badge
+                                variant="outline"
+                                className="text-xs text-red-600"
+                              >
+                                Private
+                              </Badge>
+                            )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
