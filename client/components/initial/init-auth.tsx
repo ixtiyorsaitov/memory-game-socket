@@ -4,12 +4,13 @@ import { useAuth } from "@/hooks/use-user";
 import { useEffect } from "react";
 
 export default function InitAuth() {
-  const { setUser } = useAuth();
+  const { setUser, user } = useAuth();
 
   useEffect(() => {
     const name = localStorage.getItem("playerName");
     if (name && name.trim() !== "") {
       setUser({
+        ...user,
         name,
         allowInvites: true,
       });

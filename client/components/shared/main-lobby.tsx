@@ -13,9 +13,12 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Users, Play, User, Shield, ShieldOff } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { io } from "socket.io-client";
+import { useAuth } from "@/hooks/use-user";
+import { IUser } from "@/types";
+import { useOnlineUsers } from "@/hooks/use-online-users";
 
 interface MainLobbyProps {
   playerName: string | null;
@@ -24,13 +27,13 @@ interface MainLobbyProps {
 }
 
 // Mock online users data with invite preferences
-const onlineUsers = [
-  { id: 1, name: "Alice", status: "online", allowInvites: true },
-  { id: 2, name: "Bob", status: "playing", allowInvites: true },
-  { id: 3, name: "Charlie", status: "online", allowInvites: false },
-  { id: 4, name: "Diana", status: "online", allowInvites: true },
-  { id: 5, name: "Eve", status: "playing", allowInvites: false },
-];
+// const onlineUsers = [
+//   { id: 1, name: "Alice", status: "online", allowInvites: true },
+//   { id: 2, name: "Bob", status: "playing", allowInvites: true },
+//   { id: 3, name: "Charlie", status: "online", allowInvites: false },
+//   { id: 4, name: "Diana", status: "online", allowInvites: true },
+//   { id: 5, name: "Eve", status: "playing", allowInvites: false },
+// ];
 
 export function MainLobby({
   playerName,
@@ -43,6 +46,8 @@ export function MainLobby({
   >([]);
   const socket = useRef<ReturnType<typeof io> | null>(null);
   const router = useRouter();
+  const { user } = useAuth();
+  const { onlineUsers, setOnlineUsers } = useOnlineUsers();
 
   const handleInviteUser = (userId: number) => {
     setSentInvites((prev) => [...prev, userId]);
@@ -72,9 +77,19 @@ export function MainLobby({
   };
 
   // Connect to websocket
-  // useEffect(() => {
-  //   socket.current = io("ws://localhost:5000");
-  // }, []);
+  useEffect(() => {
+    socket.current = io("ws://localhost:5000");
+  }, []);
+  useEffect(() => {
+    if (user.name) {
+      socket.current?.emit("user:add-online", user);
+      socket.current?.on("user:get-all", (data: IUser[]) => {
+        setOnlineUsers(data);
+        console.log(data);
+        console.log(user);
+      });
+    }
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -184,7 +199,7 @@ export function MainLobby({
               <div className="space-y-3">
                 {onlineUsers.map((user) => (
                   <div
-                    key={user.id}
+                    key={user.socketId}
                     className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
                   >
                     <div className="flex items-center gap-2">
@@ -209,12 +224,15 @@ export function MainLobby({
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleInviteUser(user.id)}
-                            disabled={sentInvites.includes(user.id)}
+                            // onClick={() => handleInviteUser(user.socketIdid)}
+                            // disabled={sentInvites.includes(user.socketId)}
                           >
-                            {sentInvites.includes(user.id)
-                              ? "Invited"
-                              : "Invite"}
+                            {/* <>
+                              {sentInvites.includes(user.socketId)
+                                ? "Invited"
+                                : "Invite"}
+                            </> */}
+                            Invite
                           </Button>
                         )}
                       {user.status === "online" &&
