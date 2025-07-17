@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { GameBoard } from "@/components/shared/game-board";
+import { GameBoard } from "@/components/shared/game-board/game-board";
 
 export default function SinglePlayerPage() {
   const [playerName, setPlayerName] = useState("");

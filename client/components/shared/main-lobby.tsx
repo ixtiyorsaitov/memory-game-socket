@@ -100,14 +100,6 @@ export function MainLobby({
       setReceivingAlertOpen(true);
       setInvitingUser(data.from);
     });
-    socket.current?.on("user:get-allow-invites", (data) => {
-      // if (JSON.stringify(data) !== JSON.stringify(user)) {
-      // }
-      // setOnlineUsers(
-      //   onlineUsers.map((ou) => (ou.socketId === data.socketId ? data : ou))
-      // );
-      // console.log(data);
-    });
   }, [socket]);
   useEffect(() => {
     console.log(onlineUsers);
