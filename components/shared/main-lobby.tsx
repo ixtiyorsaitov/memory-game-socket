@@ -1,19 +1,26 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ThemeToggle } from "@/components/ui/theme-toggle"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
-import { Users, Play, User, Shield, ShieldOff } from "lucide-react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Users, Play, User, Shield, ShieldOff } from "lucide-react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { io } from "socket.io-client";
 
 interface MainLobbyProps {
-  playerName: string
-  allowInvites: boolean
-  onInvitePreferenceChange: (allow: boolean) => void
+  playerName: string | null;
+  allowInvites: boolean;
+  onInvitePreferenceChange: (allow: boolean) => void;
 }
 
 // Mock online users data with invite preferences
@@ -23,35 +30,51 @@ const onlineUsers = [
   { id: 3, name: "Charlie", status: "online", allowInvites: false },
   { id: 4, name: "Diana", status: "online", allowInvites: true },
   { id: 5, name: "Eve", status: "playing", allowInvites: false },
-]
+];
 
-export function MainLobby({ playerName, allowInvites, onInvitePreferenceChange }: MainLobbyProps) {
-  const [sentInvites, setSentInvites] = useState<number[]>([])
-  const [receivedInvites, setReceivedInvites] = useState<{ id: number; from: string }[]>([])
-  const router = useRouter()
+export function MainLobby({
+  playerName,
+  allowInvites,
+  onInvitePreferenceChange,
+}: MainLobbyProps) {
+  const [sentInvites, setSentInvites] = useState<number[]>([]);
+  const [receivedInvites, setReceivedInvites] = useState<
+    { id: number; from: string }[]
+  >([]);
+  const socket = useRef<ReturnType<typeof io> | null>(null);
+  const router = useRouter();
 
   const handleInviteUser = (userId: number) => {
-    setSentInvites((prev) => [...prev, userId])
+    setSentInvites((prev) => [...prev, userId]);
     // Here you would send socket invitation
-    console.log(`Inviting user ${userId}`)
-  }
+    console.log(`Inviting user ${userId}`);
+  };
 
   const handleAcceptInvite = (inviteId: number) => {
-    setReceivedInvites((prev) => prev.filter((invite) => invite.id !== inviteId))
-    router.push("/game/online")
-  }
+    setReceivedInvites((prev) =>
+      prev.filter((invite) => invite.id !== inviteId)
+    );
+    router.push("/game/online");
+  };
 
   const handleDeclineInvite = (inviteId: number) => {
-    setReceivedInvites((prev) => prev.filter((invite) => invite.id !== inviteId))
-  }
+    setReceivedInvites((prev) =>
+      prev.filter((invite) => invite.id !== inviteId)
+    );
+  };
 
   const handleSinglePlayerClick = () => {
-    router.push("/game/single")
-  }
+    router.push("/game/single");
+  };
 
   const handleOnlineGameClick = () => {
-    router.push("/game/online")
-  }
+    router.push("/game/online");
+  };
+
+  // Connect to websocket
+  // useEffect(() => {
+  //   socket.current = io("ws://localhost:5000");
+  // }, []);
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -76,12 +99,21 @@ export function MainLobby({ playerName, allowInvites, onInvitePreferenceChange }
               )}
               Privacy Settings
             </CardTitle>
-            <CardDescription>Control who can invite you to games</CardDescription>
+            <CardDescription>
+              Control who can invite you to games
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center space-x-2">
-              <Switch id="allow-invites" checked={allowInvites} onCheckedChange={onInvitePreferenceChange} />
-              <Label htmlFor="allow-invites" className="flex items-center gap-2">
+              <Switch
+                id="allow-invites"
+                checked={allowInvites}
+                onCheckedChange={onInvitePreferenceChange}
+              />
+              <Label
+                htmlFor="allow-invites"
+                className="flex items-center gap-2"
+              >
                 {allowInvites ? (
                   <>
                     <Shield className="h-4 w-4 text-green-600" />
@@ -117,18 +149,29 @@ export function MainLobby({ playerName, allowInvites, onInvitePreferenceChange }
               {/* Received Invitations */}
               {receivedInvites.length > 0 && allowInvites && (
                 <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Game Invitations</h4>
+                  <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                    Game Invitations
+                  </h4>
                   {receivedInvites.map((invite) => (
                     <div
                       key={invite.id}
                       className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded mb-2"
                     >
-                      <span className="text-sm">{invite.from} invited you to play</span>
+                      <span className="text-sm">
+                        {invite.from} invited you to play
+                      </span>
                       <div className="flex gap-2">
-                        <Button size="sm" onClick={() => handleAcceptInvite(invite.id)}>
+                        <Button
+                          size="sm"
+                          onClick={() => handleAcceptInvite(invite.id)}
+                        >
                           Accept
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => handleDeclineInvite(invite.id)}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeclineInvite(invite.id)}
+                        >
                           Decline
                         </Button>
                       </div>
@@ -140,7 +183,10 @@ export function MainLobby({ playerName, allowInvites, onInvitePreferenceChange }
               {/* Online Users List */}
               <div className="space-y-3">
                 {onlineUsers.map((user) => (
-                  <div key={user.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                  <div
+                    key={user.id}
+                    className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
+                  >
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4" />
                       <span className="font-medium">{user.name}</span>
@@ -149,24 +195,38 @@ export function MainLobby({ playerName, allowInvites, onInvitePreferenceChange }
                       )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={user.status === "online" ? "default" : "secondary"} className="text-xs">
+                      <Badge
+                        variant={
+                          user.status === "online" ? "default" : "secondary"
+                        }
+                        className="text-xs"
+                      >
                         {user.status}
                       </Badge>
-                      {user.status === "online" && user.name !== playerName && user.allowInvites && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleInviteUser(user.id)}
-                          disabled={sentInvites.includes(user.id)}
-                        >
-                          {sentInvites.includes(user.id) ? "Invited" : "Invite"}
-                        </Button>
-                      )}
-                      {user.status === "online" && user.name !== playerName && !user.allowInvites && (
-                        <Badge variant="outline" className="text-xs text-red-600">
-                          Private
-                        </Badge>
-                      )}
+                      {user.status === "online" &&
+                        user.name !== playerName &&
+                        user.allowInvites && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleInviteUser(user.id)}
+                            disabled={sentInvites.includes(user.id)}
+                          >
+                            {sentInvites.includes(user.id)
+                              ? "Invited"
+                              : "Invite"}
+                          </Button>
+                        )}
+                      {user.status === "online" &&
+                        user.name !== playerName &&
+                        !user.allowInvites && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs text-red-600"
+                          >
+                            Private
+                          </Badge>
+                        )}
                     </div>
                   </div>
                 ))}
@@ -187,10 +247,15 @@ export function MainLobby({ playerName, allowInvites, onInvitePreferenceChange }
                   <CardHeader className="text-center">
                     <User className="h-12 w-12 mx-auto text-primary mb-2" />
                     <CardTitle className="text-xl">Single Player</CardTitle>
-                    <CardDescription>Play alone and improve your memory skills</CardDescription>
+                    <CardDescription>
+                      Play alone and improve your memory skills
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button className="w-full" onClick={handleSinglePlayerClick}>
+                    <Button
+                      className="w-full"
+                      onClick={handleSinglePlayerClick}
+                    >
                       <Play className="h-4 w-4 mr-2" />
                       Start Single Game
                     </Button>
@@ -201,8 +266,12 @@ export function MainLobby({ playerName, allowInvites, onInvitePreferenceChange }
                 <Card className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-primary/50">
                   <CardHeader className="text-center">
                     <Users className="h-12 w-12 mx-auto text-primary mb-2" />
-                    <CardTitle className="text-xl">Online Multiplayer</CardTitle>
-                    <CardDescription>Play with other players online</CardDescription>
+                    <CardTitle className="text-xl">
+                      Online Multiplayer
+                    </CardTitle>
+                    <CardDescription>
+                      Play with other players online
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Button className="w-full" onClick={handleOnlineGameClick}>
@@ -225,7 +294,9 @@ export function MainLobby({ playerName, allowInvites, onInvitePreferenceChange }
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div>
                 <div className="text-2xl font-bold text-primary">0</div>
-                <div className="text-sm text-muted-foreground">Games Played</div>
+                <div className="text-sm text-muted-foreground">
+                  Games Played
+                </div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-green-600">0</div>
@@ -244,5 +315,5 @@ export function MainLobby({ playerName, allowInvites, onInvitePreferenceChange }
         </Card>
       </div>
     </div>
-  )
+  );
 }

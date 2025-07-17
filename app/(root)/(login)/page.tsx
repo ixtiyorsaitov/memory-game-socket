@@ -1,18 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { LoginScreen } from "@/components/shared/login-screen";
+import { useAuth } from "@/hooks/use-user";
 
 export default function Home() {
   const router = useRouter();
-
-  useEffect(() => {
-    const savedName = localStorage.getItem("playerName");
-    if (savedName) {
-      router.push("/lobby");
-    }
-  }, []);
+  const { user } = useAuth();
+  if (user.name) return redirect("/lobby");
 
   const handleLogin = (name: string) => {
     localStorage.setItem("playerName", name);
