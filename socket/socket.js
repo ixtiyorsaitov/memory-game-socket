@@ -18,10 +18,10 @@ const getUser = (socketId) => {
 io.on("connection", (socket) => {
   console.log("User connected", socket.id);
 
+  socket.emit("user:get-socket-id", socket.id);
   socket.on("user:add-online", (data) => {
     addOnlineUser(data, socket.id);
     io.emit("user:get-all", users);
-    io.emit("user:get-socket-id", socket.id);
   });
 
   socket.on("invite:send", ({ to }) => {

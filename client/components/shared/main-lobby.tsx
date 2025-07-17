@@ -106,9 +106,13 @@ export function MainLobby({
       // setOnlineUsers(
       //   onlineUsers.map((ou) => (ou.socketId === data.socketId ? data : ou))
       // );
-      console.log(data);
+      // console.log(data);
     });
   }, [socket]);
+  useEffect(() => {
+    console.log(onlineUsers);
+    console.log("userid", user.socketId);
+  }, [onlineUsers]);
 
   useEffect(() => {
     socket.current?.emit("user:edit-alow-invites", user.allowInvites);
@@ -185,40 +189,6 @@ export function MainLobby({
                 <CardDescription>Players currently online</CardDescription>
               </CardHeader>
               <CardContent>
-                {/* Received Invitations */}
-                {/* {receivedInvites.length > 0 && allowInvites && (
-                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                    Game Invitations
-                  </h4>
-                  {receivedInvites.map((invite) => (
-                    <div
-                      key={invite.id}
-                      className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded mb-2"
-                    >
-                      <span className="text-sm">
-                        {invite.from} invited you to play
-                      </span>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleAcceptInvite(invite.id)}
-                        >
-                          Accept
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDeclineInvite(invite.id)}
-                        >
-                          Decline
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )} */}
-
                 {/* Online Users List */}
                 <div className="space-y-3">
                   {onlineUsers
