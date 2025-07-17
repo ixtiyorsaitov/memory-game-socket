@@ -19,6 +19,7 @@ import { io } from "socket.io-client";
 import { useAuth } from "@/hooks/use-user";
 import { IUser } from "@/types";
 import { useOnlineUsers } from "@/hooks/use-online-users";
+import ReceivingAlert from "@/app/(root)/_components/receiving-alert";
 
 interface MainLobbyProps {
   playerName: string | null;
@@ -46,20 +47,25 @@ export function MainLobby({
   >([]);
   const socket = useRef<ReturnType<typeof io> | null>(null);
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const { onlineUsers, setOnlineUsers } = useOnlineUsers();
+  const [receivingAlertOpen, setReceivingAlertOpen] = useState<boolean>(false);
+  const [invitingUser, setInvitingUser] = useState<IUser | null>(null);
 
-  const handleInviteUser = (userId: number) => {
-    setSentInvites((prev) => [...prev, userId]);
+  const handleInviteUser = (to: string) => {
+    // setSentInvites((prev) => [...prev, userId]);
     // Here you would send socket invitation
-    console.log(`Inviting user ${userId}`);
+    console.log(`Inviting user ${to}`);
+    socket.current?.emit("invite:send", {
+      to,
+    });
   };
 
-  const handleAcceptInvite = (inviteId: number) => {
-    setReceivedInvites((prev) =>
-      prev.filter((invite) => invite.id !== inviteId)
-    );
-    router.push("/game/online");
+  const handleAcceptInvite = (inviteId: string) => {
+    // setReceivedInvites((prev) =>
+    //   prev.filter((invite) => invite.id !== inviteId)
+    // );
+    // router.push("/game/online");
   };
 
   const handleDeclineInvite = (inviteId: number) => {
@@ -83,86 +89,98 @@ export function MainLobby({
   useEffect(() => {
     if (user.name) {
       socket.current?.emit("user:add-online", user);
-      socket.current?.on("user:get-all", (data: IUser[]) => {
-        setOnlineUsers(data);
-        console.log(data);
-        console.log(user);
-      });
+      socket.current?.on(
+        "user:get-all",
+        (data: { users: IUser[]; userId: string }) => {
+          setOnlineUsers(data.users);
+          setUser({ ...user, socketId: data.userId });
+        }
+      );
     }
-  }, [user]);
+    console.log(user);
+  }, []);
+  useEffect(() => {
+    // Receive invited game
+    socket.current?.on("invite:receive", (data) => {
+      console.log(data);
+      setReceivingAlertOpen(true);
+      setInvitingUser(data.from);
+    });
+  }, [socket]);
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold">Memory Card Game</h1>
-            <Badge variant="secondary">Welcome, {playerName}!</Badge>
-          </div>
-          <ThemeToggle />
-        </div>
-
-        {/* Invite Settings */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {allowInvites ? (
-                <Shield className="h-5 w-5 text-green-600" />
-              ) : (
-                <ShieldOff className="h-5 w-5 text-red-600" />
-              )}
-              Privacy Settings
-            </CardTitle>
-            <CardDescription>
-              Control who can invite you to games
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="allow-invites"
-                checked={allowInvites}
-                onCheckedChange={onInvitePreferenceChange}
-              />
-              <Label
-                htmlFor="allow-invites"
-                className="flex items-center gap-2"
-              >
-                {allowInvites ? (
-                  <>
-                    <Shield className="h-4 w-4 text-green-600" />
-                    Allow game invitations
-                  </>
-                ) : (
-                  <>
-                    <ShieldOff className="h-4 w-4 text-red-600" />
-                    Block game invitations
-                  </>
-                )}
-              </Label>
+    <>
+      <div className="min-h-screen bg-background p-4">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-8">
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold">Memory Card Game</h1>
+              <Badge variant="secondary">Welcome, {playerName}!</Badge>
             </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              {allowInvites
-                ? "Other players can send you game invitations"
-                : "You won't receive any game invitations from other players"}
-            </p>
-          </CardContent>
-        </Card>
+            <ThemeToggle />
+          </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Online Users */}
-          <Card className="lg:col-span-1">
+          {/* Invite Settings */}
+          <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Online Players ({onlineUsers.length})
+                {allowInvites ? (
+                  <Shield className="h-5 w-5 text-green-600" />
+                ) : (
+                  <ShieldOff className="h-5 w-5 text-red-600" />
+                )}
+                Privacy Settings
               </CardTitle>
-              <CardDescription>Players currently online</CardDescription>
+              <CardDescription>
+                Control who can invite you to games
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {/* Received Invitations */}
-              {receivedInvites.length > 0 && allowInvites && (
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="allow-invites"
+                  checked={allowInvites}
+                  onCheckedChange={onInvitePreferenceChange}
+                />
+                <Label
+                  htmlFor="allow-invites"
+                  className="flex items-center gap-2"
+                >
+                  {allowInvites ? (
+                    <>
+                      <Shield className="h-4 w-4 text-green-600" />
+                      Allow game invitations
+                    </>
+                  ) : (
+                    <>
+                      <ShieldOff className="h-4 w-4 text-red-600" />
+                      Block game invitations
+                    </>
+                  )}
+                </Label>
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                {allowInvites
+                  ? "Other players can send you game invitations"
+                  : "You won't receive any game invitations from other players"}
+              </p>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Online Users */}
+            <Card className="lg:col-span-1">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Online Players ({onlineUsers.length})
+                </CardTitle>
+                <CardDescription>Players currently online</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {/* Received Invitations */}
+                {/* {receivedInvites.length > 0 && allowInvites && (
                 <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
                   <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">
                     Game Invitations
@@ -193,38 +211,36 @@ export function MainLobby({
                     </div>
                   ))}
                 </div>
-              )}
+              )} */}
 
-              {/* Online Users List */}
-              <div className="space-y-3">
-                {onlineUsers.map((user) => (
-                  <div
-                    key={user.socketId}
-                    className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
-                  >
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      <span className="font-medium">{user.name}</span>
-                      {!user.allowInvites && (
-                        <ShieldOff className="h-3 w-3 text-red-500" />
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant={
-                          user.status === "online" ? "default" : "secondary"
-                        }
-                        className="text-xs"
-                      >
-                        {user.status}
-                      </Badge>
-                      {user.status === "online" &&
-                        user.name !== playerName &&
-                        user.allowInvites && (
+                {/* Online Users List */}
+                <div className="space-y-3">
+                  {onlineUsers.map((item) => (
+                    <div
+                      key={item.socketId}
+                      className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
+                    >
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        <span className="font-medium">{item.name}</span>
+                        {!item.allowInvites && (
+                          <ShieldOff className="h-3 w-3 text-red-500" />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant={
+                            user.status === "online" ? "default" : "secondary"
+                          }
+                          className="text-xs"
+                        >
+                          {item.status}
+                        </Badge>
+                        {item.status === "online" && item.allowInvites && (
                           <Button
                             size="sm"
                             variant="outline"
-                            // onClick={() => handleInviteUser(user.socketIdid)}
+                            onClick={() => handleInviteUser(item.socketId)}
                             // disabled={sentInvites.includes(user.socketId)}
                           >
                             {/* <>
@@ -235,103 +251,116 @@ export function MainLobby({
                             Invite
                           </Button>
                         )}
-                      {user.status === "online" &&
-                        user.name !== playerName &&
-                        !user.allowInvites && (
-                          <Badge
-                            variant="outline"
-                            className="text-xs text-red-600"
-                          >
-                            Private
-                          </Badge>
-                        )}
+                        {item.status === "online" &&
+                          item.name !== playerName &&
+                          !item.allowInvites && (
+                            <Badge
+                              variant="outline"
+                              className="text-xs text-red-600"
+                            >
+                              Private
+                            </Badge>
+                          )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Game Modes */}
-          <Card className="lg:col-span-2">
+            {/* Game Modes */}
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Choose Game Mode</CardTitle>
+                <CardDescription>Select how you want to play</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Single Player */}
+                  <Card className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-primary/50">
+                    <CardHeader className="text-center">
+                      <User className="h-12 w-12 mx-auto text-primary mb-2" />
+                      <CardTitle className="text-xl">Single Player</CardTitle>
+                      <CardDescription>
+                        Play alone and improve your memory skills
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button
+                        className="w-full"
+                        onClick={handleSinglePlayerClick}
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        Start Single Game
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* Online Multiplayer */}
+                  <Card className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-primary/50">
+                    <CardHeader className="text-center">
+                      <Users className="h-12 w-12 mx-auto text-primary mb-2" />
+                      <CardTitle className="text-xl">
+                        Online Multiplayer
+                      </CardTitle>
+                      <CardDescription>
+                        Play with other players online
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button
+                        className="w-full"
+                        onClick={handleOnlineGameClick}
+                      >
+                        <Users className="h-4 w-4 mr-2" />
+                        Play Online
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Game Stats */}
+          <Card className="mt-6">
             <CardHeader>
-              <CardTitle>Choose Game Mode</CardTitle>
-              <CardDescription>Select how you want to play</CardDescription>
+              <CardTitle>Game Statistics</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Single Player */}
-                <Card className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-primary/50">
-                  <CardHeader className="text-center">
-                    <User className="h-12 w-12 mx-auto text-primary mb-2" />
-                    <CardTitle className="text-xl">Single Player</CardTitle>
-                    <CardDescription>
-                      Play alone and improve your memory skills
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button
-                      className="w-full"
-                      onClick={handleSinglePlayerClick}
-                    >
-                      <Play className="h-4 w-4 mr-2" />
-                      Start Single Game
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* Online Multiplayer */}
-                <Card className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-primary/50">
-                  <CardHeader className="text-center">
-                    <Users className="h-12 w-12 mx-auto text-primary mb-2" />
-                    <CardTitle className="text-xl">
-                      Online Multiplayer
-                    </CardTitle>
-                    <CardDescription>
-                      Play with other players online
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button className="w-full" onClick={handleOnlineGameClick}>
-                      <Users className="h-4 w-4 mr-2" />
-                      Play Online
-                    </Button>
-                  </CardContent>
-                </Card>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-primary">0</div>
+                  <div className="text-sm text-muted-foreground">
+                    Games Played
+                  </div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-green-600">0</div>
+                  <div className="text-sm text-muted-foreground">Games Won</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-blue-600">0</div>
+                  <div className="text-sm text-muted-foreground">
+                    Best Score
+                  </div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-purple-600">0s</div>
+                  <div className="text-sm text-muted-foreground">Best Time</div>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
-
-        {/* Game Stats */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Game Statistics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-primary">0</div>
-                <div className="text-sm text-muted-foreground">
-                  Games Played
-                </div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-green-600">0</div>
-                <div className="text-sm text-muted-foreground">Games Won</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-blue-600">0</div>
-                <div className="text-sm text-muted-foreground">Best Score</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-purple-600">0s</div>
-                <div className="text-sm text-muted-foreground">Best Time</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
-    </div>
+      {receivingAlertOpen && (
+        <ReceivingAlert
+          open={receivingAlertOpen}
+          setOpen={setReceivingAlertOpen}
+          user={invitingUser}
+        />
+      )}
+    </>
   );
 }
