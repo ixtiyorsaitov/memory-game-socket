@@ -32,7 +32,7 @@ const ReceivingAlert: FC<{
             <span className="font-bold">{user?.name}</span> Wants to Play
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Click to accept or decline the invite from
+            Click to accept or decline the invite from{" "}
             <span className="font-bold">{user?.name}</span>.
           </AlertDialogDescription>
         </AlertDialogHeader>

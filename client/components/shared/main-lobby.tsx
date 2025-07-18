@@ -50,7 +50,6 @@ export function MainLobby({
   const [receivingAlertOpen, setReceivingAlertOpen] = useState<boolean>(false);
   const [invitingUser, setInvitingUser] = useState<IUser | null>(null);
 
-
   const handleInviteUser = (to: string) => {
     // setSentInvites((prev) => [...prev, userId]);
     // Here you would send socket invitation
