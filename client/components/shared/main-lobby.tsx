@@ -50,6 +50,7 @@ export function MainLobby({
   const [receivingAlertOpen, setReceivingAlertOpen] = useState<boolean>(false);
   const [invitingUser, setInvitingUser] = useState<IUser | null>(null);
 
+
   const handleInviteUser = (to: string) => {
     // setSentInvites((prev) => [...prev, userId]);
     // Here you would send socket invitation
@@ -84,32 +85,37 @@ export function MainLobby({
     socket.current = io("ws://localhost:5000");
   }, []);
   useEffect(() => {
-    if (user.name) {
-      socket.current?.on("user:get-socket-id", (id) => {
-        setUser({ ...user, socketId: id });
-      });
+    socket.current?.on("user:get-socket-id", (id) => {
+      console.log("user's id", id);
+      setUser({ ...user, socketId: id });
+    });
+  }, [socket.current]);
+  useEffect(() => {
+    if (user.name && user.socketId) {
       socket.current?.emit("user:add-online", user);
+
       socket.current?.on("user:get-all", (data: IUser[]) => {
-        setOnlineUsers(data);
+        const filtered = data.filter((u) => u.socketId !== user.socketId);
+        console.log("datas", filtered);
+        setOnlineUsers(filtered);
       });
     }
-  }, []);
+  }, [user.name, user.socketId]);
+
   useEffect(() => {
     // Receive invited game
     socket.current?.on("invite:receive", (data) => {
       setReceivingAlertOpen(true);
       setInvitingUser(data.from);
     });
+    socket.current?.on("user:get-socket-id", (id) => {
+      setUser({ ...user, socketId: id });
+    });
   }, [socket]);
-  useEffect(() => {
-    console.log(onlineUsers);
-    console.log("userid", user.socketId);
-  }, [onlineUsers]);
 
   useEffect(() => {
     socket.current?.emit("user:edit-alow-invites", user.allowInvites);
   }, [user.allowInvites]);
-
   return (
     <>
       <div className="min-h-screen bg-background p-4">
@@ -183,56 +189,52 @@ export function MainLobby({
               <CardContent>
                 {/* Online Users List */}
                 <div className="space-y-3">
-                  {onlineUsers
-                    .filter((u) => u.socketId !== user.socketId)
-                    .map((item) => {
-                      console.log(item.name);
-
-                      return (
-                        <div
-                          key={item.socketId}
-                          className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
-                        >
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4" />
-                            <span className="font-medium">{item.name}</span>
-                            {!item.allowInvites && (
-                              <ShieldOff className="h-3 w-3 text-red-500" />
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant={
-                                user.status === "online"
-                                  ? "default"
-                                  : "secondary"
-                              }
-                              className="text-xs"
-                            >
-                              {item.status}
-                            </Badge>
-                            {item.status === "online" && item.allowInvites && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleInviteUser(item.socketId)}
-                              >
-                                Invite
-                              </Button>
-                            )}
-                            {item.status === "online" &&
-                              item.allowInvites === false && (
-                                <Badge
-                                  variant="outline"
-                                  className="text-xs text-red-600"
-                                >
-                                  Private
-                                </Badge>
-                              )}
-                          </div>
+                  {onlineUsers.map((item) => {
+                    return (
+                      <div
+                        key={item.socketId}
+                        className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
+                      >
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          <span className="font-medium">{item.name}</span>
+                          {!item.allowInvites && (
+                            <ShieldOff className="h-3 w-3 text-red-500" />
+                          )}
                         </div>
-                      );
-                    })}
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant={
+                              user.status === "online" ? "default" : "secondary"
+                            }
+                            className="text-xs"
+                          >
+                            {item.status}
+                          </Badge>
+                          {item.status === "online" && item.allowInvites && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                handleInviteUser(item.socketId ?? "")
+                              }
+                            >
+                              Invite
+                            </Button>
+                          )}
+                          {item.status === "online" &&
+                            item.allowInvites === false && (
+                              <Badge
+                                variant="outline"
+                                className="text-xs text-red-600"
+                              >
+                                Private
+                              </Badge>
+                            )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>

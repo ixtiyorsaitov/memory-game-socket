@@ -1,3 +1,5 @@
+"use client";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -7,16 +9,21 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { IUser } from "@/types";
-import React, { FC } from "react";
+import React, { FC, useEffect } from "react";
 
 const ReceivingAlert: FC<{
   open: boolean;
   setOpen: (open: boolean) => void;
   user: IUser | null;
 }> = ({ open, setOpen, user }) => {
+  useEffect(() => {
+    if (open) {
+      const audio = new Audio("/sounds/invite-sound.mp3");
+      audio.play().catch((err) => console.log("Audio error:", err));
+    }
+  }, [open]);
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogContent>

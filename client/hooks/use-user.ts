@@ -11,7 +11,7 @@ export const useAuth = create<Store>()((set) => ({
     name: null,
     allowInvites: true,
     status: "online",
-    socketId: "",
+    socketId: null,
   },
   setUser: (user: IUser) => set({ user }),
 }));
