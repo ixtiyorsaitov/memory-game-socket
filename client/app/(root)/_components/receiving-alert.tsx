@@ -17,7 +17,8 @@ const ReceivingAlert: FC<{
   open: boolean;
   setOpen: (open: boolean) => void;
   user: IUser | null;
-}> = ({ open, setOpen, user }) => {
+  onResponseToInvite: (response: boolean) => void;
+}> = ({ open, setOpen, user, onResponseToInvite }) => {
   useEffect(() => {
     if (open) {
       const audio = new Audio("/sounds/invite-sound.mp3");
@@ -37,8 +38,12 @@ const ReceivingAlert: FC<{
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Decline</AlertDialogCancel>
-          <AlertDialogAction>Accept</AlertDialogAction>
+          <AlertDialogCancel onClick={() => onResponseToInvite(false)}>
+            Decline
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={() => onResponseToInvite(true)}>
+            Accept
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

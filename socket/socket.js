@@ -1,3 +1,4 @@
+const { v4: uuidv4 } = require("uuid");
 const io = require("socket.io")(5000, {
   cors: { origin: "*", methods: ["GET", "POST"] },
 });
@@ -17,7 +18,6 @@ const getUser = (socketId) => {
 
 io.on("connection", (socket) => {
   console.log("User connected", socket.id);
-
   socket.emit("user:get-socket-id", socket.id);
   socket.on("user:add-online", (data) => {
     addOnlineUser(data, socket.id);
@@ -43,6 +43,32 @@ io.on("connection", (socket) => {
     // io.emit("user:get-allow-invites", socket.id);
     io.emit("user:get-all", users);
   });
+
+  socket.on("invite:response", ({ response, senderId }) => {
+    const senderSocket = io.sockets.sockets.get(senderId); // sender socketini top
+    const receiver = getUser(socket.id); // qabul qilgan user
+    if (response) {
+      const roomId = uuidv4();
+      socket.join(roomId);
+      // ✅ Har ikki foydalanuvchini xonaga qo‘sh
+      socket.join(roomId); // qabul qilgan
+      if (senderSocket) senderSocket.join(roomId); // yuborgan
+
+      // ✅ Har ikkisiga ham xabar yubor: game boshlansin
+      io.to(roomId).emit("game:start", {
+        message: "Game started",
+        roomId,
+        players: [receiver, getUser(senderId)],
+      });
+    } else {
+      io.to(senderId).emit("invite:get-response", {
+        response,
+        receiver: getUser(socket.id),
+      });
+    }
+  });
+
+  // socket.on('multiplayer:join-room')
 
   socket.on("disconnect", () => {
     console.log("User disconnected", socket.id);

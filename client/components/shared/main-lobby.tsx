@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/use-user";
 import { IUser } from "@/types";
 import { useOnlineUsers } from "@/hooks/use-online-users";
 import ReceivingAlert from "@/app/(root)/_components/receiving-alert";
+import { toast } from "sonner";
 
 interface MainLobbyProps {
   playerName: string | null;
@@ -49,26 +50,14 @@ export function MainLobby({
   const { onlineUsers, setOnlineUsers } = useOnlineUsers();
   const [receivingAlertOpen, setReceivingAlertOpen] = useState<boolean>(false);
   const [invitingUser, setInvitingUser] = useState<IUser | null>(null);
+  const [invitingList, setInvitingList] = useState<string[]>([]);
 
   const handleInviteUser = (to: string) => {
-    // setSentInvites((prev) => [...prev, userId]);
+    setInvitingList((prev) => [...prev, to]);
     // Here you would send socket invitation
     socket.current?.emit("invite:send", {
       to,
     });
-  };
-
-  const handleAcceptInvite = (inviteId: string) => {
-    // setReceivedInvites((prev) =>
-    //   prev.filter((invite) => invite.id !== inviteId)
-    // );
-    // router.push("/game/online");
-  };
-
-  const handleDeclineInvite = (inviteId: number) => {
-    setReceivedInvites((prev) =>
-      prev.filter((invite) => invite.id !== inviteId)
-    );
   };
 
   const handleSinglePlayerClick = () => {
@@ -77,6 +66,13 @@ export function MainLobby({
 
   const handleOnlineGameClick = () => {
     router.push("/game/online");
+  };
+
+  const handleResponseToInvite = (res: boolean) => {
+    socket.current?.emit("invite:response", {
+      senderId: invitingUser?.socketId,
+      response: res,
+    });
   };
 
   // Connect to websocket
@@ -88,6 +84,13 @@ export function MainLobby({
       console.log("user's id", id);
       setUser({ ...user, socketId: id });
     });
+    socket.current?.on("invite:get-response", (res: boolean) => {});
+    socket.current?.on(
+      "game:start",
+      (data: { roomId: string; players: string[] }) => {
+        router.push(`/game/online/${data.roomId}`);
+      }
+    );
   }, [socket.current]);
   useEffect(() => {
     if (user.name && user.socketId) {
@@ -110,6 +113,21 @@ export function MainLobby({
     socket.current?.on("user:get-socket-id", (id) => {
       setUser({ ...user, socketId: id });
     });
+    socket.current?.on(
+      "invite:get-response",
+      (data: { response: boolean; receiver: IUser }) => {
+        setInvitingList(
+          invitingList.filter((il) => il !== data.receiver.socketId)
+        );
+
+        toast[data.response ? "success" : "info"](
+          `${data.receiver.name} ${
+            data.response ? "accepted" : "refuced"
+          } your invite`
+        );
+        console.log(data);
+      }
+    );
   }, [socket]);
 
   useEffect(() => {
@@ -211,15 +229,23 @@ export function MainLobby({
                             {item.status}
                           </Badge>
                           {item.status === "online" && item.allowInvites && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                handleInviteUser(item.socketId ?? "")
-                              }
-                            >
-                              Invite
-                            </Button>
+                            <>
+                              {invitingList.some(
+                                (id) => id === item.socketId
+                              ) ? (
+                                <Badge variant="outline">Invited...</Badge>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    handleInviteUser(item.socketId ?? "")
+                                  }
+                                >
+                                  Invite
+                                </Button>
+                              )}
+                            </>
                           )}
                           {item.status === "online" &&
                             item.allowInvites === false && (
@@ -329,6 +355,7 @@ export function MainLobby({
           open={receivingAlertOpen}
           setOpen={setReceivingAlertOpen}
           user={invitingUser}
+          onResponseToInvite={handleResponseToInvite}
         />
       )}
     </>
