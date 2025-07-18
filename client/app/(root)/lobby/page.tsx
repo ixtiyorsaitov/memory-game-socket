@@ -1,6 +1,4 @@
 "use client";
-
-import { useEffect } from "react";
 import { MainLobby } from "@/components/shared/main-lobby";
 import { useAuth } from "@/hooks/use-user";
 

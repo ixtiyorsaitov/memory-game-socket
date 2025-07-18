@@ -1,12 +1,16 @@
-import { IUser } from "@/types";
+import { IRoom, IUser } from "@/types";
 import { create } from "zustand";
 
 type Store = {
-  roomUsers: IUser[];
-  setRoomUsers: (users: IUser[]) => void;
+  currentRoom: IRoom;
+  setCurrentRoom: (room: IRoom) => void;
 };
 
-export const useOnlineUsers = create<Store>()((set) => ({
-  roomUsers: [],
-  setRoomUsers: (users) => set({ roomUsers: users }),
+export const useCurrentRoom = create<Store>()((set) => ({
+  currentRoom: {
+    id: null,
+    players: [],
+    admin: null,
+  },
+  setCurrentRoom: (room) => set({ currentRoom: room }),
 }));

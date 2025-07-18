@@ -4,6 +4,7 @@ const io = require("socket.io")(5000, {
 });
 
 let users = [];
+let rooms = [];
 
 const addOnlineUser = (user, socketId) => {
   const checkUser = users.find((u) => u.socketId === socketId);
@@ -48,18 +49,38 @@ io.on("connection", (socket) => {
     const senderSocket = io.sockets.sockets.get(senderId); // sender socketini top
     const receiver = getUser(socket.id); // qabul qilgan user
     if (response) {
+      // ✅ Har ikkala foydalanuvchini statusini "playing" ga o'zgartiramiz
+      users = users.map((user) => {
+        if (user.socketId === socket.id || user.socketId === senderId) {
+          return { ...user, status: "playing" };
+        }
+        return user;
+      });
       const roomId = uuidv4();
-      socket.join(roomId);
-      // ✅ Har ikki foydalanuvchini xonaga qo‘sh
-      socket.join(roomId); // qabul qilgan
-      if (senderSocket) senderSocket.join(roomId); // yuborgan
+      // ✅ O'yinni boshlash uchun xabar yuboramiz
+      const receiver = getUser(socket.id);
+      const sender = getUser(senderId);
 
-      // ✅ Har ikkisiga ham xabar yubor: game boshlansin
-      io.to(roomId).emit("game:start", {
+      const newRoom = {
+        id: roomId,
+        players: [receiver, sender],
+        admin: senderId,
+      };
+      rooms.push(newRoom);
+
+      io.to(senderId).emit("game:start", {
         message: "Game started",
         roomId,
-        players: [receiver, getUser(senderId)],
+        players: [receiver, sender],
       });
+      io.to(socket.id).emit("game:start", {
+        message: "Game started",
+        roomId,
+        players: [receiver, sender],
+      });
+
+      // ✅ Foydalanuvchilar ro'yxatini ham yangilab yuboramiz (frontend uchun)
+      io.emit("user:get-all", users);
     } else {
       io.to(senderId).emit("invite:get-response", {
         response,
@@ -68,11 +89,65 @@ io.on("connection", (socket) => {
     }
   });
 
-  // socket.on('multiplayer:join-room')
+  socket.on("game:room", () => {
+    const roomOfUser = rooms.find(
+      (room) =>
+        room.players[0].socketId === socket.id ||
+        room.players[1].socketId === socket.id
+    );
+    if (roomOfUser) {
+      socket.emit("game:get-room", roomOfUser);
+    } else {
+      socket.emit("game:get-room", {
+        id: null,
+        players: [],
+        admin: null,
+      });
+    }
+  });
+
+  socket.on("game:leave", () => {
+    const roomOfUser = rooms.find(
+      (room) =>
+        room.players[0].socketId === socket.id ||
+        room.players[1].socketId === socket.id
+    );
+
+    if (roomOfUser) {
+      io.to(
+        roomOfUser.players[roomOfUser.players[0].socketId === socket.id ? 1 : 0]
+          .socketId
+      ).emit("game:get-room", {
+        id: null,
+        players: [],
+        admin: null,
+      });
+
+      rooms = rooms.filter((r) => r.id !== roomOfUser.id);
+      io.emit("user:get-all", users);
+    }
+  });
 
   socket.on("disconnect", () => {
     console.log("User disconnected", socket.id);
     users = users.filter((u) => u.socketId !== socket.id);
+    const roomOfDiscUser = rooms.find(
+      (room) =>
+        room.players[0].socketId === socket.id ||
+        room.players[1].socketId === socket.id
+    );
+    if (roomOfDiscUser) {
+      rooms = rooms.filter((r) => r.id !== roomOfDiscUser.id);
+      io.to(
+        roomOfDiscUser.players[
+          roomOfDiscUser.players[0].socketId === socket.id ? 1 : 0
+        ].socketId
+      ).emit("game:get-room", {
+        id: null,
+        players: [],
+        admin: null,
+      });
+    }
     io.emit("user:get-all", users);
   });
 });

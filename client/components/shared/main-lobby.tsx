@@ -92,7 +92,6 @@ export function MainLobby({
 
       socket.on("user:get-all", (data: IUser[]) => {
         const filtered = data.filter((u) => u.socketId !== user.socketId);
-        console.log("datas", filtered);
         setOnlineUsers(filtered);
       });
     }

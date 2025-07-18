@@ -1,13 +1,25 @@
 "use client";
 
 import { useAuth } from "@/hooks/use-user";
-import { useEffect, useRef } from "react";
-import { io } from "socket.io-client";
+import { useEffect } from "react";
+import { useSocket } from "../providers/socket-context";
 
 export default function InitAuth() {
   const { setUser, user } = useAuth();
-  const socket = useRef<ReturnType<typeof io> | null>(null);
+  const socket = useSocket();
 
+  useEffect(() => {
+    socket.on("user:get-socket-id", (id) => {
+      setUser({
+        ...user,
+        socketId: id,
+        name: localStorage.getItem("playerName"),
+      });
+    });
+  }, []);
+  useEffect(() => {
+    console.log("User o'zgardi", user);
+  }, [user]);
   useEffect(() => {
     const name = localStorage.getItem("playerName");
     const allowInvites = localStorage.getItem("allowInvites") || true;
