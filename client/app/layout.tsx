@@ -5,6 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import InitAuth from "@/components/initial/init-auth";
 import { Toaster } from "@/components/ui/sonner";
+import { SocketProvider } from "@/components/providers/socket-context";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,7 +24,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <div className="min-h-screen bg-background">{children}</div>
+          <SocketProvider>
+            <div className="min-h-screen bg-background">{children}</div>
+          </SocketProvider>
           <Toaster />
         </ThemeProvider>
         <InitAuth />

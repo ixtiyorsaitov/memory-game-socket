@@ -21,6 +21,7 @@ import { IUser } from "@/types";
 import { useOnlineUsers } from "@/hooks/use-online-users";
 import ReceivingAlert from "@/app/(root)/_components/receiving-alert";
 import { toast } from "sonner";
+import { useSocket } from "../providers/socket-context";
 
 interface MainLobbyProps {
   playerName: string | null;
@@ -44,7 +45,7 @@ export function MainLobby({
   const [receivedInvites, setReceivedInvites] = useState<
     { id: number; from: string }[]
   >([]);
-  const socket = useRef<ReturnType<typeof io> | null>(null);
+  const socket = useSocket();
   const router = useRouter();
   const { user, setUser } = useAuth();
   const { onlineUsers, setOnlineUsers } = useOnlineUsers();
@@ -55,7 +56,7 @@ export function MainLobby({
   const handleInviteUser = (to: string) => {
     setInvitingList((prev) => [...prev, to]);
     // Here you would send socket invitation
-    socket.current?.emit("invite:send", {
+    socket.emit("invite:send", {
       to,
     });
   };
@@ -69,34 +70,27 @@ export function MainLobby({
   };
 
   const handleResponseToInvite = (res: boolean) => {
-    socket.current?.emit("invite:response", {
+    socket.emit("invite:response", {
       senderId: invitingUser?.socketId,
       response: res,
     });
   };
 
-  // Connect to websocket
   useEffect(() => {
-    socket.current = io("ws://localhost:5000");
-  }, []);
-  useEffect(() => {
-    socket.current?.on("user:get-socket-id", (id) => {
+    socket.on("user:get-socket-id", (id) => {
       console.log("user's id", id);
       setUser({ ...user, socketId: id });
     });
-    socket.current?.on("invite:get-response", (res: boolean) => {});
-    socket.current?.on(
-      "game:start",
-      (data: { roomId: string; players: string[] }) => {
-        router.push(`/game/online/${data.roomId}`);
-      }
-    );
-  }, [socket.current]);
+    socket.on("invite:get-response", (res: boolean) => {});
+    socket.on("game:start", (data: { roomId: string; players: string[] }) => {
+      router.push(`/game/online/${data.roomId}`);
+    });
+  }, [socket]);
   useEffect(() => {
     if (user.name && user.socketId) {
-      socket.current?.emit("user:add-online", user);
+      socket.emit("user:add-online", user);
 
-      socket.current?.on("user:get-all", (data: IUser[]) => {
+      socket.on("user:get-all", (data: IUser[]) => {
         const filtered = data.filter((u) => u.socketId !== user.socketId);
         console.log("datas", filtered);
         setOnlineUsers(filtered);
@@ -106,14 +100,14 @@ export function MainLobby({
 
   useEffect(() => {
     // Receive invited game
-    socket.current?.on("invite:receive", (data) => {
+    socket.on("invite:receive", (data) => {
       setReceivingAlertOpen(true);
       setInvitingUser(data.from);
     });
-    socket.current?.on("user:get-socket-id", (id) => {
+    socket.on("user:get-socket-id", (id) => {
       setUser({ ...user, socketId: id });
     });
-    socket.current?.on(
+    socket.on(
       "invite:get-response",
       (data: { response: boolean; receiver: IUser }) => {
         setInvitingList(
@@ -131,7 +125,7 @@ export function MainLobby({
   }, [socket]);
 
   useEffect(() => {
-    socket.current?.emit("user:edit-alow-invites", user.allowInvites);
+    socket.emit("user:edit-alow-invites", user.allowInvites);
   }, [user.allowInvites]);
   return (
     <>
