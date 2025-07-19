@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { GameBoard } from "@/components/shared/game-board/game-board";
 import { useSocket } from "@/components/providers/socket-context";
 import { useCurrentRoom } from "@/hooks/use-current-room";
@@ -13,7 +13,6 @@ export default function OnlineGamePage() {
   const socket = useSocket();
 
   const pathName = usePathname();
-  const searchParams = useSearchParams();
 
   const { currentRoom, setCurrentRoom } = useCurrentRoom();
 
@@ -34,7 +33,7 @@ export default function OnlineGamePage() {
       console.log("PopState event:", event);
     };
 
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+    const handleBeforeUnload = () => {
       console.log("Sahifa yopilmoqda yoki reload bo'lmoqda");
     };
 
@@ -47,7 +46,7 @@ export default function OnlineGamePage() {
       window.removeEventListener("popstate", handlePopState);
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, []);
+  }, [currentRoom]);
 
   // Pathname o'zgarishini kuzatish (programmatic navigation uchun)
   useEffect(() => {
@@ -56,7 +55,7 @@ export default function OnlineGamePage() {
 
   useEffect(() => {
     socket.emit("game:room");
-  }, []);
+  }, [socket]);
 
   useEffect(() => {
     socket.on("game:get-room", (data: IRoom) => {
@@ -83,7 +82,7 @@ export default function OnlineGamePage() {
   }
 
   if (currentRoom.players.length < 2) {
-    return <h1>O'yin topilmadi yoki allaqachon tugagan</h1>;
+    return <h1>Game not found or already end</h1>;
   }
 
   return (
