@@ -1,17 +1,5 @@
-"use client";
-
-import { redirect } from "next/navigation";
-import { LoginScreen } from "@/components/shared/login-screen";
-import { useAuth } from "@/hooks/use-user";
+import LoginPage from "@/components/shared/login-page";
 
 export default function Home() {
-  const { user } = useAuth();
-  if (user.name) return redirect("/lobby");
-
-  const handleLogin = (name: string) => {
-    localStorage.setItem("playerName", name);
-    window.location.href = "/lobby";
-  };
-
-  return <LoginScreen onLogin={handleLogin} />;
+  return <LoginPage />;
 }
