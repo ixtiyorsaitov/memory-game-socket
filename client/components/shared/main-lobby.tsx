@@ -77,6 +77,18 @@ export function MainLobby({
   };
 
   useEffect(() => {
+    socket.connect();
+
+    socket.on("connect", () => {
+      console.log("✅ Connected to socket:", socket.id);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
     socket.on("user:get-socket-id", (id) => {
       console.log("user's id", id);
       setUser({ ...user, socketId: id });
