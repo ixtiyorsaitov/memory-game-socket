@@ -76,19 +76,23 @@ export function GameBoard({
   }, [gameMode, gameStarted, matchedPairs]);
   useEffect(() => {
     socket.on("game:get-flip-card", (cardId: number) => {
-      setCards((prev) =>
-        prev.map((c) => {
-          if (c.id === cardId) {
-            return { ...c, isFlipped: true };
-          }
-          return c;
-        })
-      );
+      // setCards((prev) =>
+      //   prev.map((c) => {
+      //     if (c.id === cardId) {
+      //       return { ...c, isFlipped: true };
+      //     }
+      //     return c;
+      //   })
+      // );
+      handleCardClick(cardId, true);
       console.log(`flipped ${cardId}`);
     });
   }, [socket]);
 
-  const handleCardClick = (cardId: number) => {
+  const handleCardClick = (
+    cardId: number,
+    isOpponityFlipped: boolean = false
+  ) => {
     if (!gameStarted) setGameStarted(true);
 
     const card = cards[cardId];
@@ -101,7 +105,9 @@ export function GameBoard({
       prev.map((c) => (c.id === cardId ? { ...c, isFlipped: true } : c))
     );
 
-    socket.emit("game:flip-card", cardId);
+    if (!isOpponityFlipped) {
+      socket.emit("game:flip-card", cardId);
+    }
 
     if (newFlippedCards.length === 2) {
       setMoves((prev) => prev + 1);
