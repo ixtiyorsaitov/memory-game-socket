@@ -76,46 +76,53 @@ export function GameBoard({
   }, [gameMode, gameStarted, matchedPairs]);
   useEffect(() => {
     socket.on("game:get-flip-card", (cardId: number) => {
-      // setCards((prev) =>
-      //   prev.map((c) => {
-      //     if (c.id === cardId) {
-      //       return { ...c, isFlipped: true };
-      //     }
-      //     return c;
-      //   })
-      // );
-      handleCardClick(cardId, true);
-      console.log(`flipped ${cardId}`);
+      handleOpenCardByOpponent(cardId);
     });
+
+    socket.on(
+      "game:get-clear-flipped-cards",
+      (clearFlipperCardsId: Array<number>) => {
+        setCards((prev) =>
+          prev.map((c) =>
+            c.id === clearFlipperCardsId[0] || c.id === clearFlipperCardsId[1]
+              ? { ...c, isFlipped: false }
+              : c
+          )
+        );
+        setQueue(true);
+      }
+    );
   }, [socket]);
 
-  const handleCardClick = (
-    cardId: number,
-    isOpponityFlipped: boolean = false
-  ) => {
+  useEffect(() => {
+    console.log("flippedList", flippedCards);
+  }, [flippedCards]);
+
+  const handleOpenCardByOpponent = (cardId: number) => {
+    setCards((prev) =>
+      prev.map((c) => (c.id === cardId ? { ...c, isFlipped: true } : c))
+    );
+  };
+
+  const handleCardClick = (cardId: number) => {
     if (!gameStarted) setGameStarted(true);
 
     const card = cards[cardId];
     if (card.isFlipped || card.isMatched || flippedCards.length === 2) return;
 
     const newFlippedCards = [...flippedCards, cardId];
-    setFlippedCards(newFlippedCards);
+    setFlippedCards((prev) => [...prev, cardId]);
 
     setCards((prev) =>
       prev.map((c) => (c.id === cardId ? { ...c, isFlipped: true } : c))
     );
-
-    if (!isOpponityFlipped) {
-      socket.emit("game:flip-card", cardId);
-    }
+    socket.emit("game:flip-card", cardId);
 
     if (newFlippedCards.length === 2) {
       setMoves((prev) => prev + 1);
-
       const [firstId, secondId] = newFlippedCards;
       const firstCard = cards[firstId];
       const secondCard = cards[secondId];
-
       if (firstCard.emoji === secondCard.emoji) {
         // Match found
         setTimeout(() => {
@@ -139,7 +146,9 @@ export function GameBoard({
                 : c
             )
           );
+          socket.emit("game:clear-flipped-cards", newFlippedCards);
           setFlippedCards([]);
+          setQueue(false);
         }, 1000);
       }
     }
