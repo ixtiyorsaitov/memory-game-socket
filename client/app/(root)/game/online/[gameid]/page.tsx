@@ -25,6 +25,8 @@ export default function OnlineGamePage() {
       setCurrentRoom(data);
       console.log("kelgan room", data);
     });
+
+    // Initialize cards
     socket.on("game:get-cards", (cards: CardType[]) => {
       setShuffleCards(cards);
     });

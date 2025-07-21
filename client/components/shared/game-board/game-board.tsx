@@ -13,6 +13,8 @@ import { GameCompletionMessage } from "./game-completion-message";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-user";
 import GameChat from "./game-chat";
+import { useCurrentRoom } from "@/hooks/use-current-room";
+import { useSocket } from "@/components/providers/socket-context";
 
 interface GameBoardProps {
   gameMode: "single" | "online";
@@ -51,20 +53,16 @@ export function GameBoard({
   const [moves, setMoves] = useState(0);
   const [time, setTime] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
+  const { user } = useAuth();
+  const { currentRoom } = useCurrentRoom();
+  const [queue, setQueue] = useState<boolean>(
+    currentRoom.admin === user.socketId
+  );
+  const socket = useSocket();
 
-  // Initialize cards
   useEffect(() => {
-    // const shuffledCards = cardEmojis
-    //   .sort(() => Math.random() - 0.5)
-    //   .map((emoji, index) => ({
-    //     id: index,
-    //     emoji,
-    //     isFlipped: false,
-    //     isMatched: false,
-    //   }));
-    // console.log(shuffledCards);
-    // setCards(shuffledCards);
-  }, []);
+    setCards(shuffleCards);
+  }, [shuffleCards]);
 
   // Timer for single player
   useEffect(() => {
@@ -76,6 +74,19 @@ export function GameBoard({
     }
     return () => clearInterval(interval);
   }, [gameMode, gameStarted, matchedPairs]);
+  useEffect(() => {
+    socket.on("game:get-flip-card", (cardId: number) => {
+      setCards((prev) =>
+        prev.map((c) => {
+          if (c.id === cardId) {
+            return { ...c, isFlipped: true };
+          }
+          return c;
+        })
+      );
+      console.log(`flipped ${cardId}`);
+    });
+  }, [socket]);
 
   const handleCardClick = (cardId: number) => {
     if (!gameStarted) setGameStarted(true);
@@ -89,6 +100,8 @@ export function GameBoard({
     setCards((prev) =>
       prev.map((c) => (c.id === cardId ? { ...c, isFlipped: true } : c))
     );
+
+    socket.emit("game:flip-card", cardId);
 
     if (newFlippedCards.length === 2) {
       setMoves((prev) => prev + 1);
@@ -199,7 +212,11 @@ export function GameBoard({
               </div>
             )} */}
 
-            <MemoryCardsGrid cards={cards} onCardClick={handleCardClick} />
+            <MemoryCardsGrid
+              disabled={!queue}
+              cards={cards}
+              onCardClick={handleCardClick}
+            />
 
             {/* Online Game Info */}
             {gameMode === "online" && (

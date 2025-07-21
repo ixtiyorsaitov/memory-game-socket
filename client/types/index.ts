@@ -8,5 +8,5 @@ export interface IUser {
 export interface IRoom {
   players: IUser[];
   id: string | null;
-  admin: IUser | null;
+  admin: string | null;
 }

@@ -117,6 +117,7 @@ io.on("connection", (socket) => {
   socket.on("game:cards", () => {
     const roomOfUser = getRoomOfPlayer(socket.id);
     if (!roomOfUser) return;
+    // Initialize cards
     const shuffleCards = cardEmojis
       .sort(() => Math.random() - 0.5)
       .map((emoji, index) => ({
@@ -129,6 +130,13 @@ io.on("connection", (socket) => {
     io.to(roomOfUser.players[0].socketId)
       .to(roomOfUser.players[1].socketId)
       .emit("game:get-cards", shuffleCards);
+  });
+
+  socket.on("game:flip-card", (cardId) => {
+    const roomOfPlayer = getRoomOfPlayer(socket.id);
+    if (!roomOfPlayer) return;
+    io.emit("game:get-flip-card", cardId);
+    console.log(cardId);
   });
 
   socket.on("game:chat", (text) => {
@@ -170,7 +178,6 @@ io.on("connection", (socket) => {
         players: [],
         admin: null,
       });
-      console.log(rooms);
     }
     io.emit("user:get-all", users);
   });
