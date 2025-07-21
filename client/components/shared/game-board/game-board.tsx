@@ -145,7 +145,6 @@ export function GameBoard({
                 ? { ...c, isFlipped: false }
                 : c
             )
-            
           );
           socket.emit("game:clear-flipped-cards", newFlippedCards);
           setFlippedCards([]);
