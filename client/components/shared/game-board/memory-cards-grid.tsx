@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { CardType } from "./game-board";
+import type { CardType } from "./game-board"; // Assuming CardType is defined here or in a similar file
 
 interface MemoryCardsGridProps {
   cards: CardType[];
@@ -10,7 +10,7 @@ interface MemoryCardsGridProps {
 
 export function MemoryCardsGrid({ cards, onCardClick }: MemoryCardsGridProps) {
   return (
-    <div className="grid grid-cols-8 gap-2 max-w-2xl mx-auto">
+    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 max-w-2xl mx-auto">
       {cards.map((card) => (
         <Card
           key={card.id}

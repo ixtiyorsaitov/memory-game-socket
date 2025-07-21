@@ -87,8 +87,12 @@ io.on("connection", (socket) => {
 
   socket.on("game:room", () => {
     const roomOfPlayer = rooms.find(
-      (r) => r.players[0] === socket.id || r.players[1] === socket.id
+      (r) =>
+        r.players[0].socketId === socket.id ||
+        r.players[1].socketId === socket.id
     );
+    console.log("room player", rooms);
+
     // Emit room of player to client
     io.to(socket.id).emit(
       "game:get-room",
@@ -102,6 +106,17 @@ io.on("connection", (socket) => {
     );
   });
 
+  socket.on("game:chat", (text) => {
+    const roomOfPlayer = rooms.find(
+      (r) =>
+        r.players[0].socketId === socket.id ||
+        r.players[1].socketId === socket.id
+    );
+    if (roomOfPlayer) {
+      io.emit("game:get-chat", { text, senderId: socket.id });
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("User disconnected", socket.id);
     users = users.filter((u) => u.socketId !== socket.id);
@@ -111,16 +126,25 @@ io.on("connection", (socket) => {
         room.players[1].socketId === socket.id
     );
     if (roomOfDiscUser) {
+      users = users.map((u) => {
+        if (
+          u.socketId === roomOfDiscUser.players[0].socketId ||
+          u.socketId === roomOfDiscUser.players[1].socketId
+        ) {
+          return { ...u, status: "online" };
+        }
+        return u;
+      });
       rooms = rooms.filter((r) => r.id !== roomOfDiscUser.id);
-      // io.to(
-      //   roomOfDiscUser.players[
-      //     roomOfDiscUser.players[0].socketId === socket.id ? 1 : 0
-      //   ].socketId
-      // ).emit("game:get-room", {
-      //   id: null,
-      //   players: [],
-      //   admin: null,
-      // });
+      io.to(
+        roomOfDiscUser.players[
+          roomOfDiscUser.players[0].socketId === socket.id ? 1 : 0
+        ].socketId
+      ).emit("game:get-room", {
+        id: null,
+        players: [],
+        admin: null,
+      });
       console.log(rooms);
     }
     io.emit("user:get-all", users);

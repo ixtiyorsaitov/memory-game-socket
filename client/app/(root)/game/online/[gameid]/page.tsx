@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GameBoard } from "@/components/shared/game-board/game-board";
 import { useSocket } from "@/components/providers/socket-context";
@@ -24,7 +24,6 @@ export default function OnlineGamePage() {
       console.log("kelgan room", data);
     });
   }, [socket]);
-
   const handleBackToLobby = () => {
     router.push("/lobby");
   };

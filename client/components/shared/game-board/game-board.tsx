@@ -7,14 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { ArrowLeft, MessageCircle, RotateCcw } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { GameStats } from "./game-stats";
 import { MemoryCardsGrid } from "./memory-cards-grid";
-import { GameChat } from "./game-chat";
 import { GameCompletionMessage } from "./game-completion-message";
 import { Card, CardContent } from "@/components/ui/card";
 import { cardEmojis } from "@/lib/constants";
 import { useAuth } from "@/hooks/use-user";
+import GameChat from "./game-chat";
 
 interface GameBoardProps {
   gameMode: "single" | "online";
@@ -54,8 +53,6 @@ export function GameBoard({
   const [gameStarted, setGameStarted] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const router = useRouter();
 
   // Initialize cards
   useEffect(() => {
@@ -195,7 +192,7 @@ export function GameBoard({
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-4">
+          {/* <div className="flex items-center gap-4">
             <Button
               variant="outline"
               // onClick={onBackToLobby || (() => router.push("/"))}
@@ -203,39 +200,18 @@ export function GameBoard({
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Lobby
             </Button>
-            <Badge variant="secondary">
-              {gameMode === "single" ? "Single Player" : "Online Game"}
-            </Badge>
+
             <Badge variant="outline">{user.name}</Badge>
           </div>
           <div className="flex items-center gap-2">
-            {gameMode === "online" && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsChatOpen(!isChatOpen)}
-                className="relative"
-              >
-                <MessageCircle className="h-4 w-4 mr-2" />
-                Chat
-                {chatMessages.length > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs"
-                  >
-                    {chatMessages.filter((msg) => !msg.isOwn).length}
-                  </Badge>
-                )}
-              </Button>
-            )}
             <ThemeToggle />
-          </div>
+          </div> */}
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
           {/* Main Game Area */}
           <div className="xl:col-span-3">
-            <GameStats
+            {/* <GameStats
               gameMode={gameMode}
               matchedPairs={matchedPairs}
               moves={moves}
@@ -253,7 +229,7 @@ export function GameBoard({
               moves={moves}
               time={time}
               onResetGame={resetGame}
-            />
+            /> */}
 
             {/* Reset Button - Only for Single Player */}
             {gameMode === "single" && (
@@ -265,10 +241,10 @@ export function GameBoard({
               </div>
             )}
 
-            <MemoryCardsGrid cards={cards} onCardClick={handleCardClick} />
+            {/* <MemoryCardsGrid cards={cards} onCardClick={handleCardClick} /> */}
 
             {/* Online Game Info */}
-            {gameMode === "online" && (
+            {/* {gameMode === "online" && (
               <Card className="mt-6">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -280,19 +256,11 @@ export function GameBoard({
                   </div>
                 </CardContent>
               </Card>
-            )}
+            )} */}
           </div>
 
           {/* Chat Panel - Only for Online Games */}
-          {gameMode === "online" && (
-            <GameChat
-              opponentName={opponentName}
-              messages={chatMessages}
-              newMessage={newMessage}
-              onNewMessageChange={setNewMessage}
-              onSendMessage={handleSendMessage}
-            />
-          )}
+          {gameMode === "online" && <GameChat />}
         </div>
       </div>
     </div>

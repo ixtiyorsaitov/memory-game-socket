@@ -79,18 +79,6 @@ export function MainLobby({
   };
 
   useEffect(() => {
-    socket.connect();
-
-    socket.on("connect", () => {
-      console.log("✅ Connected to socket:", socket.id);
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
     socket.on("game:start", (data: { roomId: string; players: string[] }) => {
       router.push(`/game/online/${data.roomId}`);
       console.log(data);
@@ -124,7 +112,6 @@ export function MainLobby({
         setInvitingList(
           invitingList.filter((il) => il !== data.receiver.socketId)
         );
-        setCurrentRoom(data.room);
 
         // console.log(
         //   `Receiver id ${data.receiver.socketId}. Sender id ${user.socketId}`
@@ -137,8 +124,10 @@ export function MainLobby({
             } your invite`
           );
         }
-        router.push(`/game/online/${data.gameId}`);
-
+        if (data.response) {
+          setCurrentRoom(data.room);
+          router.push(`/game/online/${data.gameId}`);
+        }
         // console.log(data);
       }
     );
