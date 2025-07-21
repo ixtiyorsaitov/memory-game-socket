@@ -6,22 +6,34 @@ import type { CardType } from "./game-board"; // Assuming CardType is defined he
 interface MemoryCardsGridProps {
   cards: CardType[];
   onCardClick: (cardId: number) => void;
+  disabled: boolean; // Added disabled prop
 }
 
-export function MemoryCardsGrid({ cards, onCardClick }: MemoryCardsGridProps) {
+export function MemoryCardsGrid({
+  cards,
+  onCardClick,
+  disabled,
+}: MemoryCardsGridProps) {
   return (
     <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 max-w-2xl mx-auto">
       {cards.map((card) => (
         <Card
           key={card.id}
-          className={`aspect-square cursor-pointer transition-all duration-300 hover:scale-105 ${
-            card.isMatched
-              ? "bg-green-100 dark:bg-green-900 border-green-500"
-              : card.isFlipped
-              ? "bg-blue-100 dark:bg-blue-900 border-blue-500"
-              : "bg-muted hover:bg-muted/80"
-          }`}
-          onClick={() => onCardClick(card.id)}
+          className={`aspect-square transition-all duration-300 
+            ${
+              disabled
+                ? "cursor-not-allowed opacity-70"
+                : "cursor-pointer hover:scale-105"
+            } 
+            ${
+              card.isMatched
+                ? "bg-green-100 dark:bg-green-900 border-green-500"
+                : card.isFlipped
+                ? "bg-blue-100 dark:bg-blue-900 border-blue-500"
+                : "bg-muted hover:bg-muted/80"
+            }
+          `}
+          onClick={() => !disabled && onCardClick(card.id)} // Conditionally call onCardClick
         >
           <CardContent className="p-0 h-full flex items-center justify-center">
             {card.isFlipped || card.isMatched ? (

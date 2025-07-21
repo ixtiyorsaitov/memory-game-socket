@@ -135,7 +135,11 @@ io.on("connection", (socket) => {
   socket.on("game:flip-card", (cardId) => {
     const roomOfPlayer = getRoomOfPlayer(socket.id);
     if (!roomOfPlayer) return;
-    io.emit("game:get-flip-card", cardId);
+    io.to(
+      roomOfPlayer.players[
+        roomOfPlayer.players[0].socketId === socket.id ? 1 : 0
+      ].socketId
+    ).emit("game:get-flip-card", cardId);
     console.log(cardId);
   });
 
