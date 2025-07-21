@@ -14,10 +14,10 @@ import { GameChat } from "./game-chat";
 import { GameCompletionMessage } from "./game-completion-message";
 import { Card, CardContent } from "@/components/ui/card";
 import { cardEmojis } from "@/lib/constants";
+import { useAuth } from "@/hooks/use-user";
 
 interface GameBoardProps {
   gameMode: "single" | "online";
-  playerName: string;
   onBackToLobby?: () => void;
   opponentName?: string;
   opponentPairs?: number;
@@ -42,14 +42,13 @@ export interface ChatMessage {
 
 export function GameBoard({
   gameMode,
-  playerName,
-  onBackToLobby,
   opponentName = "Opponent",
   opponentPairs = 0,
 }: GameBoardProps) {
   const [cards, setCards] = useState<CardType[]>([]);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [matchedPairs, setMatchedPairs] = useState(0);
+  const { user } = useAuth();
   const [moves, setMoves] = useState(0);
   const [time, setTime] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
@@ -179,15 +178,13 @@ export function GameBoard({
     if (newMessage.trim()) {
       const message: ChatMessage = {
         id: Date.now(),
-        sender: playerName,
+        sender: user.name || "",
         message: newMessage.trim(),
         timestamp: new Date(),
         isOwn: true,
       };
       setChatMessages((prev) => [...prev, message]);
       setNewMessage("");
-      // Here you would send the message via socket
-      console.log("Sending message:", message);
     }
   };
 
@@ -201,7 +198,7 @@ export function GameBoard({
           <div className="flex items-center gap-4">
             <Button
               variant="outline"
-              onClick={onBackToLobby || (() => router.push("/"))}
+              // onClick={onBackToLobby || (() => router.push("/"))}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Lobby
@@ -209,7 +206,7 @@ export function GameBoard({
             <Badge variant="secondary">
               {gameMode === "single" ? "Single Player" : "Online Game"}
             </Badge>
-            <Badge variant="outline">{playerName}</Badge>
+            <Badge variant="outline">{user.name}</Badge>
           </div>
           <div className="flex items-center gap-2">
             {gameMode === "online" && (
@@ -240,7 +237,6 @@ export function GameBoard({
           <div className="xl:col-span-3">
             <GameStats
               gameMode={gameMode}
-              playerName={playerName}
               matchedPairs={matchedPairs}
               moves={moves}
               time={time}
@@ -295,7 +291,6 @@ export function GameBoard({
               }`}
             >
               <GameChat
-                playerName={playerName}
                 opponentName={opponentName}
                 messages={chatMessages}
                 newMessage={newMessage}

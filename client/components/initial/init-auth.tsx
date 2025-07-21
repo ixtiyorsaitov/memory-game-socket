@@ -18,9 +18,6 @@ export default function InitAuth() {
     });
   }, []);
   useEffect(() => {
-    console.log("User o'zgardi", user);
-  }, [user]);
-  useEffect(() => {
     const name = localStorage.getItem("playerName");
     const allowInvites = localStorage.getItem("allowInvites") || true;
     if (name && name.trim() !== "") {

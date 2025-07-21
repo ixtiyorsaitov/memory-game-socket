@@ -1,9 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/hooks/use-user";
 import { Timer, Trophy, User } from "lucide-react";
 
 interface GameStatsProps {
   gameMode: "single" | "online";
-  playerName: string;
   matchedPairs: number;
   moves: number;
   time: number;
@@ -13,7 +13,6 @@ interface GameStatsProps {
 
 export function GameStats({
   gameMode,
-  playerName,
   matchedPairs,
   moves,
   time,
@@ -25,6 +24,8 @@ export function GameStats({
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
+
+  const { user } = useAuth();
 
   return (
     <>
@@ -68,7 +69,7 @@ export function GameStats({
             <CardContent className="p-4">
               <div className="flex items-center gap-3 mb-3">
                 <User className="h-5 w-5 text-blue-600" />
-                <span className="font-semibold">{playerName} (You)</span>
+                <span className="font-semibold">{user.name} (You)</span>
               </div>
               <div className="grid grid-cols-2 gap-4 text-center">
                 <div>

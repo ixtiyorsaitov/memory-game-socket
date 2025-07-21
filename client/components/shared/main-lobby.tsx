@@ -90,12 +90,12 @@ export function MainLobby({
 
   useEffect(() => {
     socket.on("user:get-socket-id", (id) => {
-      console.log("user's id", id);
       setUser({ ...user, socketId: id });
     });
     socket.on("invite:get-response", (res: boolean) => {});
     socket.on("game:start", (data: { roomId: string; players: string[] }) => {
       router.push(`/game/online/${data.roomId}`);
+      console.log(data);
     });
   }, [socket]);
   useEffect(() => {

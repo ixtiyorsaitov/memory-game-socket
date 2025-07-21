@@ -9,7 +9,6 @@ import { Send, MessageCircle } from "lucide-react";
 import { ChatMessage } from "./game-board";
 
 interface GameChatProps {
-  playerName: string;
   opponentName: string;
   messages: ChatMessage[];
   newMessage: string;
@@ -18,8 +17,6 @@ interface GameChatProps {
 }
 
 export function GameChat({
-  playerName,
-  opponentName,
   messages,
   newMessage,
   onNewMessageChange,
