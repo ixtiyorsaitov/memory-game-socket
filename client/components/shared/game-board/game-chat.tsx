@@ -1,6 +1,5 @@
 import type React from "react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -35,9 +34,11 @@ const GameChat = () => {
 
   useEffect(() => {
     socket.on("game:get-chat", (data: Message) => {
-      console.log(messages);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: data.text, senderId: data.senderId },
+      ]);
 
-      setMessages([...messages, { text: data.text, senderId: data.senderId }]);
       console.log(data);
     });
   }, [socket]);
@@ -55,6 +56,7 @@ const GameChat = () => {
       setInput("");
     }
   };
+  useEffect(() => console.log(messages), [messages]);
 
   return (
     <Card className="w-full max-w-md mx-auto flex flex-col h-[450px]">
@@ -77,7 +79,7 @@ const GameChat = () => {
                 <div
                   className={cn(
                     "rounded-lg p-3 max-w-[70%]",
-                    message.senderId === "user"
+                    message.senderId === user.socketId
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground"
                   )}
