@@ -13,6 +13,14 @@ const addOnlineUser = (user, socketId) => {
   }
 };
 
+const getRoomOfPlayer = (socketId) => {
+  const roomOfPlayer = rooms.find(
+    (r) =>
+      r.players[0].socketId === socketId || r.players[1].socketId === socketId
+  );
+  return roomOfPlayer;
+};
+
 const getUser = (socketId) => {
   return users.find((user) => user.socketId === socketId);
 };
@@ -106,6 +114,23 @@ io.on("connection", (socket) => {
     );
   });
 
+  socket.on("game:cards", () => {
+    const roomOfUser = getRoomOfPlayer(socket.id);
+    if (!roomOfUser) return;
+    const shuffleCards = cardEmojis
+      .sort(() => Math.random() - 0.5)
+      .map((emoji, index) => ({
+        id: index,
+        emoji,
+        isFlipped: false,
+        isMatched: false,
+      }));
+
+    io.to(roomOfUser.players[0].socketId)
+      .to(roomOfUser.players[1].socketId)
+      .emit("game:get-cards", shuffleCards);
+  });
+
   socket.on("game:chat", (text) => {
     const roomOfPlayer = rooms.find(
       (r) =>
@@ -150,3 +175,38 @@ io.on("connection", (socket) => {
     io.emit("user:get-all", users);
   });
 });
+
+const cardEmojis = [
+  "🎮",
+  "🎯",
+  "🎲",
+  "🎪",
+  "🎨",
+  "🎭",
+  "🎪",
+  "🎯",
+  "🚀",
+  "⭐",
+  "🌟",
+  "💎",
+  "🔥",
+  "⚡",
+  "🌈",
+  "🎊",
+  "🎮",
+  "🎯",
+  "🎲",
+  "🎪",
+  "🎨",
+  "🎭",
+  "🎪",
+  "🎯",
+  "🚀",
+  "⭐",
+  "🌟",
+  "💎",
+  "🔥",
+  "⚡",
+  "🌈",
+  "🎊",
+];

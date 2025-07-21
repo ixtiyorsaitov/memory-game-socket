@@ -11,7 +11,6 @@ import { GameStats } from "./game-stats";
 import { MemoryCardsGrid } from "./memory-cards-grid";
 import { GameCompletionMessage } from "./game-completion-message";
 import { Card, CardContent } from "@/components/ui/card";
-import { cardEmojis } from "@/lib/constants";
 import { useAuth } from "@/hooks/use-user";
 import GameChat from "./game-chat";
 
@@ -20,6 +19,7 @@ interface GameBoardProps {
   onBackToLobby?: () => void;
   opponentName?: string;
   opponentPairs?: number;
+  shuffleCards: CardType[];
 }
 
 // Card emojis for the memory game
@@ -43,28 +43,27 @@ export function GameBoard({
   gameMode,
   opponentName = "Opponent",
   opponentPairs = 0,
+  shuffleCards,
 }: GameBoardProps) {
-  const [cards, setCards] = useState<CardType[]>([]);
+  const [cards, setCards] = useState<CardType[]>(shuffleCards);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [matchedPairs, setMatchedPairs] = useState(0);
-  const { user } = useAuth();
   const [moves, setMoves] = useState(0);
   const [time, setTime] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [newMessage, setNewMessage] = useState("");
 
   // Initialize cards
   useEffect(() => {
-    const shuffledCards = cardEmojis
-      .sort(() => Math.random() - 0.5)
-      .map((emoji, index) => ({
-        id: index,
-        emoji,
-        isFlipped: false,
-        isMatched: false,
-      }));
-    setCards(shuffledCards);
+    // const shuffledCards = cardEmojis
+    //   .sort(() => Math.random() - 0.5)
+    //   .map((emoji, index) => ({
+    //     id: index,
+    //     emoji,
+    //     isFlipped: false,
+    //     isMatched: false,
+    //   }));
+    // console.log(shuffledCards);
+    // setCards(shuffledCards);
   }, []);
 
   // Timer for single player
@@ -77,32 +76,6 @@ export function GameBoard({
     }
     return () => clearInterval(interval);
   }, [gameMode, gameStarted, matchedPairs]);
-
-  // Mock incoming messages for demo
-  useEffect(() => {
-    if (gameMode === "online") {
-      const mockMessages = [
-        { sender: opponentName, message: "Good luck!", delay: 2000 },
-        { sender: opponentName, message: "Nice move!", delay: 15000 },
-        { sender: opponentName, message: "This is challenging!", delay: 30000 },
-      ];
-
-      mockMessages.forEach(({ sender, message, delay }) => {
-        setTimeout(() => {
-          setChatMessages((prev) => [
-            ...prev,
-            {
-              id: Date.now() + Math.random(),
-              sender,
-              message,
-              timestamp: new Date(),
-              isOwn: false,
-            },
-          ]);
-        }, delay);
-      });
-    }
-  }, [gameMode, opponentName]);
 
   const handleCardClick = (cardId: number) => {
     if (!gameStarted) setGameStarted(true);
@@ -153,37 +126,22 @@ export function GameBoard({
     }
   };
 
-  const resetGame = () => {
-    const shuffledCards = cardEmojis
-      .sort(() => Math.random() - 0.5)
-      .map((emoji, index) => ({
-        id: index,
-        emoji,
-        isFlipped: false,
-        isMatched: false,
-      }));
-    setCards(shuffledCards);
-    setFlippedCards([]);
-    setMatchedPairs(0);
-    setMoves(0);
-    setTime(0);
-    setGameStarted(false);
-  };
-
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newMessage.trim()) {
-      const message: ChatMessage = {
-        id: Date.now(),
-        sender: user.name || "",
-        message: newMessage.trim(),
-        timestamp: new Date(),
-        isOwn: true,
-      };
-      setChatMessages((prev) => [...prev, message]);
-      setNewMessage("");
-    }
-  };
+  // const resetGame = () => {
+  //   const shuffledCards = cardEmojis
+  //     .sort(() => Math.random() - 0.5)
+  //     .map((emoji, index) => ({
+  //       id: index,
+  //       emoji,
+  //       isFlipped: false,
+  //       isMatched: false,
+  //     }));
+  //   setCards(shuffledCards);
+  //   setFlippedCards([]);
+  //   setMatchedPairs(0);
+  //   setMoves(0);
+  //   setTime(0);
+  //   setGameStarted(false);
+  // };
 
   const isGameComplete = matchedPairs === 16;
 
@@ -211,7 +169,7 @@ export function GameBoard({
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
           {/* Main Game Area */}
           <div className="xl:col-span-3">
-            {/* <GameStats
+            <GameStats
               gameMode={gameMode}
               matchedPairs={matchedPairs}
               moves={moves}
@@ -228,23 +186,23 @@ export function GameBoard({
               opponentName={opponentName}
               moves={moves}
               time={time}
-              onResetGame={resetGame}
-            /> */}
+              // onResetGame={resetGame}
+            />
 
             {/* Reset Button - Only for Single Player */}
-            {gameMode === "single" && (
+            {/* {gameMode === "single" && (
               <div className="flex justify-center mb-6">
                 <Button variant="outline" onClick={resetGame}>
                   <RotateCcw className="h-4 w-4 mr-2" />
                   Reset Game
                 </Button>
               </div>
-            )}
+            )} */}
 
-            {/* <MemoryCardsGrid cards={cards} onCardClick={handleCardClick} /> */}
+            <MemoryCardsGrid cards={cards} onCardClick={handleCardClick} />
 
             {/* Online Game Info */}
-            {/* {gameMode === "online" && (
+            {gameMode === "online" && (
               <Card className="mt-6">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -256,7 +214,7 @@ export function GameBoard({
                   </div>
                 </CardContent>
               </Card>
-            )} */}
+            )}
           </div>
 
           {/* Chat Panel - Only for Online Games */}

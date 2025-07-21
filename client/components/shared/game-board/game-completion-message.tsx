@@ -12,7 +12,7 @@ interface GameCompletionMessageProps {
   opponentName: string;
   moves: number;
   time: number;
-  onResetGame: () => void;
+  // onResetGame: () => void;
 }
 
 export function GameCompletionMessage({
@@ -23,8 +23,8 @@ export function GameCompletionMessage({
   opponentName,
   moves,
   time,
-  onResetGame,
-}: GameCompletionMessageProps) {
+}: // onResetGame,
+GameCompletionMessageProps) {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -55,7 +55,7 @@ export function GameCompletionMessage({
               )}!`
             : `Final Score: You ${matchedPairs} - ${opponentPairs} ${opponentName}`}
         </p>
-        {gameMode === "single" && (
+        {/* {gameMode === "single" && (
           <Button
             onClick={onResetGame}
             className="bg-green-600 hover:bg-green-700"
@@ -63,7 +63,7 @@ export function GameCompletionMessage({
             <RotateCcw className="h-4 w-4 mr-2" />
             Play Again
           </Button>
-        )}
+        )} */}
       </CardContent>
     </Card>
   );
