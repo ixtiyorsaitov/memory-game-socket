@@ -17,17 +17,9 @@ export default function InitAuth() {
       });
     });
   }, []);
-  useEffect(() => {
-    const name = localStorage.getItem("playerName");
-    const allowInvites = localStorage.getItem("allowInvites") || true;
-    if (name && name.trim() !== "") {
-      setUser({
-        ...user,
-        name,
-        allowInvites: allowInvites === "false" ? false : true,
-      });
-    }
-  }, [setUser]);
+  // useEffect(() => {
+  //   console.log(user);
+  // }, [user]);
 
   return null;
 }

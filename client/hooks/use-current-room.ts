@@ -1,4 +1,4 @@
-import { IRoom, IUser } from "@/types";
+import { IRoom } from "@/types";
 import { create } from "zustand";
 
 type Store = {

@@ -1,7 +1,7 @@
 // context/socket-context.tsx
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect } from "react";
 import socket from "@/lib/socket";
 
 const SocketContext = createContext(socket);

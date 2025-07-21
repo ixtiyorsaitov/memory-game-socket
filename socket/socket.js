@@ -46,37 +46,33 @@ io.on("connection", (socket) => {
   });
 
   socket.on("invite:response", ({ response, senderId }) => {
-    const senderSocket = io.sockets.sockets.get(senderId); // sender socketini top
-    const receiver = getUser(socket.id); // qabul qilgan user
+    const receiver = getUser(socket.id);
+    const sender = getUser(senderId);
     if (response) {
-      // ✅ Har ikkala foydalanuvchini statusini "playing" ga o'zgartiramiz
+      // Change status to playing users
       users = users.map((user) => {
-        if (user.socketId === socket.id || user.socketId === senderId) {
+        if (
+          user.socketId === sender.socketId ||
+          user.socketId === receiver.socketId
+        ) {
           return { ...user, status: "playing" };
         }
         return user;
       });
-      const roomId = uuidv4();
-      // ✅ O'yinni boshlash uchun xabar yuboramiz
-      const receiver = getUser(socket.id);
-      const sender = getUser(senderId);
-
+      const gameId = uuidv4();
       const newRoom = {
-        id: roomId,
         players: [receiver, sender],
-        admin: senderId,
+        id: gameId,
+        admin: sender.socketId,
       };
       rooms.push(newRoom);
+      console.log(rooms);
 
-      io.to(senderId).emit("game:start", {
-        message: "Game started",
-        roomId,
-        players: [receiver, sender],
-      });
-      io.to(socket.id).emit("game:start", {
-        message: "Game started",
-        roomId,
-        players: [receiver, sender],
+      io.to(receiver.socketId).to(sender.socketId).emit("invite:get-response", {
+        response,
+        receiver,
+        gameId,
+        room: newRoom,
       });
 
       // ✅ Foydalanuvchilar ro'yxatini ham yangilab yuboramiz (frontend uchun)
@@ -84,48 +80,26 @@ io.on("connection", (socket) => {
     } else {
       io.to(senderId).emit("invite:get-response", {
         response,
-        receiver: getUser(socket.id),
+        receiver,
       });
     }
   });
 
   socket.on("game:room", () => {
-    const roomOfUser = rooms.find(
-      (room) =>
-        room.players[0].socketId === socket.id ||
-        room.players[1].socketId === socket.id
+    const roomOfPlayer = rooms.find(
+      (r) => r.players[0] === socket.id || r.players[1] === socket.id
     );
-    if (roomOfUser) {
-      socket.emit("game:get-room", roomOfUser);
-    } else {
-      socket.emit("game:get-room", {
-        id: null,
-        players: [],
-        admin: null,
-      });
-    }
-  });
-
-  socket.on("game:leave", () => {
-    const roomOfUser = rooms.find(
-      (room) =>
-        room.players[0].socketId === socket.id ||
-        room.players[1].socketId === socket.id
+    // Emit room of player to client
+    io.to(socket.id).emit(
+      "game:get-room",
+      roomOfPlayer
+        ? roomOfPlayer
+        : {
+            id: null,
+            players: [],
+            admin: null,
+          }
     );
-
-    if (roomOfUser) {
-      io.to(
-        roomOfUser.players[roomOfUser.players[0].socketId === socket.id ? 1 : 0]
-          .socketId
-      ).emit("game:get-room", {
-        id: null,
-        players: [],
-        admin: null,
-      });
-
-      rooms = rooms.filter((r) => r.id !== roomOfUser.id);
-      io.emit("user:get-all", users);
-    }
   });
 
   socket.on("disconnect", () => {
@@ -138,15 +112,16 @@ io.on("connection", (socket) => {
     );
     if (roomOfDiscUser) {
       rooms = rooms.filter((r) => r.id !== roomOfDiscUser.id);
-      io.to(
-        roomOfDiscUser.players[
-          roomOfDiscUser.players[0].socketId === socket.id ? 1 : 0
-        ].socketId
-      ).emit("game:get-room", {
-        id: null,
-        players: [],
-        admin: null,
-      });
+      // io.to(
+      //   roomOfDiscUser.players[
+      //     roomOfDiscUser.players[0].socketId === socket.id ? 1 : 0
+      //   ].socketId
+      // ).emit("game:get-room", {
+      //   id: null,
+      //   players: [],
+      //   admin: null,
+      // });
+      console.log(rooms);
     }
     io.emit("user:get-all", users);
   });

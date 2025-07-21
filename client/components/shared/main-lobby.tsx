@@ -17,11 +17,12 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { io } from "socket.io-client";
 import { useAuth } from "@/hooks/use-user";
-import { IUser } from "@/types";
+import { IRoom, IUser } from "@/types";
 import { useOnlineUsers } from "@/hooks/use-online-users";
 import ReceivingAlert from "@/app/(root)/_components/receiving-alert";
 import { toast } from "sonner";
 import { useSocket } from "../providers/socket-context";
+import { useCurrentRoom } from "@/hooks/use-current-room";
 
 interface MainLobbyProps {
   playerName: string | null;
@@ -52,6 +53,7 @@ export function MainLobby({
   const [receivingAlertOpen, setReceivingAlertOpen] = useState<boolean>(false);
   const [invitingUser, setInvitingUser] = useState<IUser | null>(null);
   const [invitingList, setInvitingList] = useState<string[]>([]);
+  const { setCurrentRoom } = useCurrentRoom();
 
   const handleInviteUser = (to: string) => {
     setInvitingList((prev) => [...prev, to]);
@@ -89,10 +91,6 @@ export function MainLobby({
   }, []);
 
   useEffect(() => {
-    socket.on("user:get-socket-id", (id) => {
-      setUser({ ...user, socketId: id });
-    });
-    socket.on("invite:get-response", (res: boolean) => {});
     socket.on("game:start", (data: { roomId: string; players: string[] }) => {
       router.push(`/game/online/${data.roomId}`);
       console.log(data);
@@ -115,22 +113,33 @@ export function MainLobby({
       setReceivingAlertOpen(true);
       setInvitingUser(data.from);
     });
-    socket.on("user:get-socket-id", (id) => {
-      setUser({ ...user, socketId: id });
-    });
     socket.on(
       "invite:get-response",
-      (data: { response: boolean; receiver: IUser }) => {
+      (data: {
+        response: boolean;
+        receiver: IUser;
+        gameId: string;
+        room: IRoom;
+      }) => {
         setInvitingList(
           invitingList.filter((il) => il !== data.receiver.socketId)
         );
+        setCurrentRoom(data.room);
 
-        toast[data.response ? "success" : "info"](
-          `${data.receiver.name} ${
-            data.response ? "accepted" : "refuced"
-          } your invite`
-        );
-        console.log(data);
+        // console.log(
+        //   `Receiver id ${data.receiver.socketId}. Sender id ${user.socketId}`
+        // );
+
+        if (data.receiver.socketId !== user.socketId) {
+          toast[data.response ? "success" : "info"](
+            `${data.receiver.name} ${
+              data.response ? "accepted" : "refuced"
+            } your invite`
+          );
+        }
+        router.push(`/game/online/${data.gameId}`);
+
+        // console.log(data);
       }
     );
   }, [socket]);

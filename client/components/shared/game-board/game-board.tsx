@@ -285,19 +285,13 @@ export function GameBoard({
 
           {/* Chat Panel - Only for Online Games */}
           {gameMode === "online" && (
-            <div
-              className={`xl:col-span-1 ${
-                isChatOpen ? "block" : "hidden xl:block"
-              }`}
-            >
-              <GameChat
-                opponentName={opponentName}
-                messages={chatMessages}
-                newMessage={newMessage}
-                onNewMessageChange={setNewMessage}
-                onSendMessage={handleSendMessage}
-              />
-            </div>
+            <GameChat
+              opponentName={opponentName}
+              messages={chatMessages}
+              newMessage={newMessage}
+              onNewMessageChange={setNewMessage}
+              onSendMessage={handleSendMessage}
+            />
           )}
         </div>
       </div>
