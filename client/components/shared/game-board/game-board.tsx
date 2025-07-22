@@ -184,7 +184,7 @@ export function GameBoard({
   //   setGameStarted(false);
   // };
 
-  const isGameComplete = matchedPairs === 16;
+  const isGameComplete = matchedPairs + opponentPairs === 16;
 
   return (
     <div className="min-h-screen bg-background p-4">
