@@ -11,7 +11,7 @@ import Footer from "@/components/shared/footer";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Memory Card Game",
+  title: "Multiplayer memory Card Game",
   description:
     "A fun memory card game with single player and online multiplayer modes",
 };
