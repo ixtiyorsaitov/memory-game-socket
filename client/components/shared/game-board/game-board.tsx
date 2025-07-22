@@ -44,7 +44,6 @@ export interface ChatMessage {
 export function GameBoard({
   gameMode,
   opponentName = "Opponent",
-  opponentPairs = 0,
   shuffleCards,
 }: GameBoardProps) {
   const [cards, setCards] = useState<CardType[]>(shuffleCards);
@@ -55,6 +54,7 @@ export function GameBoard({
   const [gameStarted, setGameStarted] = useState(false);
   const { user } = useAuth();
   const { currentRoom } = useCurrentRoom();
+  const [opponentPairs, setOppentPairs] = useState<number>(0);
   const [queue, setQueue] = useState<boolean>(
     currentRoom.admin === user.socketId
   );
@@ -92,6 +92,17 @@ export function GameBoard({
         setQueue(true);
       }
     );
+    socket.on("game:get-match-cards", (clearFlipperCardsId: Array<number>) => {
+      setCards((prev) =>
+        prev.map((c) =>
+          c.id === clearFlipperCardsId[0] || c.id === clearFlipperCardsId[1]
+            ? { ...c, isMatched: true }
+            : c
+        )
+      );
+      setOppentPairs((prev) => prev + 1);
+      setQueue(true);
+    });
   }, [socket]);
 
   useEffect(() => {
@@ -133,8 +144,10 @@ export function GameBoard({
                 : c
             )
           );
+          socket.emit("game:match-cards", newFlippedCards);
           setMatchedPairs((prev) => prev + 1);
           setFlippedCards([]);
+          setQueue(false);
         }, 500);
       } else {
         // No match

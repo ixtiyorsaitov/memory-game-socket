@@ -153,6 +153,16 @@ io.on("connection", (socket) => {
     ).emit("game:get-clear-flipped-cards", cards);
   });
 
+  socket.on("game:match-cards", (cards) => {
+    const roomOfPlayer = getRoomOfPlayer(socket.id);
+    if (!roomOfPlayer) return;
+    io.to(
+      roomOfPlayer.players[
+        roomOfPlayer.players[0].socketId === socket.id ? 1 : 0
+      ].socketId
+    ).emit("game:get-match-cards", cards);
+  });
+
   socket.on("game:chat", (text) => {
     const roomOfPlayer = rooms.find(
       (r) =>

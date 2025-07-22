@@ -2,7 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Trophy, RotateCcw } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Trophy, RotateCcw, Frown, Scale } from "lucide-react";
 
 interface GameCompletionMessageProps {
   isGameComplete: boolean;
@@ -36,19 +37,52 @@ GameCompletionMessageProps) {
   }
 
   return (
-    <Card className="mb-6 border-green-500 bg-green-50 dark:bg-green-950">
+    <Card
+      className={cn(
+        "mb-6",
+        matchedPairs > opponentPairs
+          ? "border-green-500 bg-green-50 dark:bg-green-950"
+          : matchedPairs < opponentPairs
+          ? "border-red-500 bg-red-50 dark:bg-red-950"
+          : "border-yellow-500 bg-yellow-50 dark:bg-yellow-950"
+      )}
+    >
       <CardContent className="p-6 text-center">
-        <Trophy className="h-12 w-12 mx-auto mb-4 text-green-600" />
-        <h2 className="text-2xl font-bold text-green-800 dark:text-green-200 mb-2">
+        {matchedPairs > opponentPairs ? (
+          <Trophy className="h-12 w-12 mx-auto mb-4 text-green-600" />
+        ) : matchedPairs < opponentPairs ? (
+          <Frown className="h-12 w-12 mx-auto mb-4 text-red-600" />
+        ) : (
+          <Scale className="h-12 w-12 mx-auto mb-4 text-yellow-600" />
+        )}
+        <h2
+          className={cn(
+            "text-2xl font-bold mb-2",
+            matchedPairs > opponentPairs
+              ? "text-green-800 dark:text-green-200"
+              : matchedPairs < opponentPairs
+              ? "text-red-800 dark:text-red-200"
+              : "text-yellow-800 dark:text-yellow-200"
+          )}
+        >
           {gameMode === "single"
             ? "Congratulations!"
             : matchedPairs > opponentPairs
             ? "You Won!"
             : matchedPairs < opponentPairs
             ? "You Lost!"
-            : "It's a Tie!"}
+            : "Draw!"}
         </h2>
-        <p className="text-green-700 dark:text-green-300 mb-4">
+        <p
+          className={cn(
+            "mb-4",
+            matchedPairs > opponentPairs
+              ? "text-green-700 dark:text-green-300"
+              : matchedPairs < opponentPairs
+              ? "text-red-700 dark:text-red-300"
+              : "text-yellow-700 dark:text-yellow-300"
+          )}
+        >
           {gameMode === "single"
             ? `You completed the game in ${moves} moves and ${formatTime(
                 time
