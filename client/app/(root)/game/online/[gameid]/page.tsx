@@ -23,7 +23,6 @@ export default function OnlineGamePage() {
   useEffect(() => {
     socket.on("game:get-room", (data: IRoom) => {
       setCurrentRoom(data);
-      console.log("kelgan room", data);
     });
 
     // Initialize cards

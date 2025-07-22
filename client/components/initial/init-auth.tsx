@@ -17,9 +17,6 @@ export default function InitAuth() {
       });
     });
   }, []);
-  // useEffect(() => {
-  //   console.log(user);
-  // }, [user]);
 
   return null;
 }

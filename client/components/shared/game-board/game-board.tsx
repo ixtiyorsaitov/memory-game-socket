@@ -107,10 +107,6 @@ export function GameBoard({
     });
   }, [socket]);
 
-  useEffect(() => {
-    console.log("flippedList", flippedCards);
-  }, [flippedCards]);
-
   const handleOpenCardByOpponent = (cardId: number) => {
     setCards((prev) =>
       prev.map((c) => (c.id === cardId ? { ...c, isFlipped: true } : c))

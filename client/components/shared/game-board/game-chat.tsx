@@ -38,8 +38,6 @@ const GameChat = () => {
         ...prevMessages,
         { text: data.text, senderId: data.senderId },
       ]);
-
-      console.log(data);
     });
   }, [socket]);
 
@@ -50,13 +48,10 @@ const GameChat = () => {
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim()) {
-      console.log(input);
-
       socket.emit("game:chat", input);
       setInput("");
     }
   };
-  useEffect(() => console.log(messages), [messages]);
 
   return (
     <Card className="w-full max-w-md mx-auto flex flex-col h-[450px]">

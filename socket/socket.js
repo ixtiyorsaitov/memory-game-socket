@@ -26,7 +26,6 @@ const getUser = (socketId) => {
 };
 
 io.on("connection", (socket) => {
-  console.log("User connected", socket.id);
   socket.emit("user:get-socket-id", socket.id);
   socket.on("user:add-online", (data) => {
     addOnlineUser(data, socket.id);
@@ -74,7 +73,6 @@ io.on("connection", (socket) => {
         admin: sender.socketId,
       };
       rooms.push(newRoom);
-      console.log(rooms);
 
       io.to(receiver.socketId).to(sender.socketId).emit("invite:get-response", {
         response,
@@ -99,7 +97,6 @@ io.on("connection", (socket) => {
         r.players[0].socketId === socket.id ||
         r.players[1].socketId === socket.id
     );
-    console.log("room player", rooms);
 
     // Emit room of player to client
     io.to(socket.id).emit(
@@ -140,7 +137,6 @@ io.on("connection", (socket) => {
         roomOfPlayer.players[0].socketId === socket.id ? 1 : 0
       ].socketId
     ).emit("game:get-flip-card", cardId);
-    console.log(cardId);
   });
 
   socket.on("game:clear-flipped-cards", (cards) => {
@@ -175,7 +171,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected", socket.id);
     users = users.filter((u) => u.socketId !== socket.id);
     const roomOfDiscUser = rooms.find(
       (room) =>

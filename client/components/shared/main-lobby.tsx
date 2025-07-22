@@ -82,7 +82,6 @@ export function MainLobby({
   useEffect(() => {
     socket.on("game:start", (data: { roomId: string; players: string[] }) => {
       router.push(`/game/online/${data.roomId}`);
-      console.log(data);
     });
   }, [socket]);
   useEffect(() => {
@@ -114,10 +113,6 @@ export function MainLobby({
           invitingList.filter((il) => il !== data.receiver.socketId)
         );
 
-        // console.log(
-        //   `Receiver id ${data.receiver.socketId}. Sender id ${user.socketId}`
-        // );
-
         if (data.receiver.socketId !== user.socketId) {
           toast[data.response ? "success" : "info"](
             `${data.receiver.name} ${
@@ -129,7 +124,6 @@ export function MainLobby({
           setCurrentRoom(data.room);
           router.push(`/game/online/${data.gameId}`);
         }
-        // console.log(data);
       }
     );
   }, [socket]);

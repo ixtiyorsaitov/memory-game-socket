@@ -1,4 +1,5 @@
 import Head from "next/head";
+import LobbyPageComponent from "../_components/lobby-page";
 
 export default function LobbyPage() {
   return (
@@ -10,6 +11,9 @@ export default function LobbyPage() {
           content="A fun memory card game with single player and online multiplayer modes"
         />
       </Head>
+      <main>
+        <LobbyPageComponent />
+      </main>
     </>
   );
 }
