@@ -31,3 +31,55 @@ Here're some of the project's best features:
 *   📡 Handles real-time events efficiently
 *   🔧 Modular structure with reusable components
 *   🌗 Light & Dark Mode Support
+
+<h2>🛠️ Installation Steps:</h2>
+
+<p>1. Make sure Git and NodeJS is installed.</p>
+
+<p>2. Clone this repository to your local computer.</p>
+
+<p>3. Create .env.local file in client directory.</p>
+
+```
+NEXT_PUBLIC_WEB_SOCKET_DOMAIN=ws://localhost:5000
+```
+
+<p>4. Enter your client file</p>
+
+```
+cd client
+```
+
+<p>5. Install node modules</p>
+
+```
+npm install
+```
+
+<p>6. Run client</p>
+
+```
+npm run dev
+```
+
+<p>7. Enter your socket file</p>
+
+```
+cd socket
+```
+
+<p>8. Install node modules</p>
+
+```
+npm run dev
+```
+
+  
+  
+<h2>💻 Built with</h2>
+
+Technologies used in the project:
+
+*   Frontend: Next.js 15 ReactJS TailwindCSS Shadcn UI
+*   Real-Time Gaming: Socket.IO Zustand for state management
+*   Type Safety: TypeScript
