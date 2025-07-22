@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import InitAuth from "@/components/initial/init-auth";
 import { Toaster } from "@/components/ui/sonner";
 import { SocketProvider } from "@/components/providers/socket-context";
+import Footer from "@/components/shared/footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,6 +27,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <SocketProvider>
             <div className="min-h-screen bg-background">{children}</div>
+            <Footer />
           </SocketProvider>
           <Toaster />
         </ThemeProvider>

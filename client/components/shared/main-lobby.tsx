@@ -68,7 +68,8 @@ export function MainLobby({
   };
 
   const handleOnlineGameClick = () => {
-    router.push("/game/online");
+    // router.push("/game/online");
+    alert("Cooming soon");
   };
 
   const handleResponseToInvite = (res: boolean) => {
@@ -303,7 +304,7 @@ export function MainLobby({
                         Online Multiplayer
                       </CardTitle>
                       <CardDescription>
-                        Play with other players online
+                        Play with other random players online
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -322,7 +323,7 @@ export function MainLobby({
           </div>
 
           {/* Game Stats */}
-          <Card className="mt-6">
+          {/* <Card className="mt-6">
             <CardHeader>
               <CardTitle>Game Statistics</CardTitle>
             </CardHeader>
@@ -350,7 +351,7 @@ export function MainLobby({
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
       </div>
       {receivingAlertOpen && (

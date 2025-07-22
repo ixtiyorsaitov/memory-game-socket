@@ -6,7 +6,6 @@ interface GameStatsProps {
   gameMode: "single" | "online";
   matchedPairs: number;
   moves: number;
-  time: number;
   opponentName: string;
   opponentPairs: number;
 }
@@ -15,32 +14,17 @@ export function GameStats({
   gameMode,
   matchedPairs,
   moves,
-  time,
   opponentName,
   opponentPairs,
 }: GameStatsProps) {
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
   const { user } = useAuth();
 
   return (
     <>
       {gameMode === "single" ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
           <Card>
             <CardContent className="p-4 text-center">
-              <Timer className="h-5 w-5 mx-auto mb-2 text-blue-600" />
-              <div className="text-2xl font-bold">{formatTime(time)}</div>
-              <div className="text-sm text-muted-foreground">Time</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Trophy className="h-5 w-5 mx-auto mb-2 text-yellow-600" />
               <div className="text-2xl font-bold">{moves}</div>
               <div className="text-sm text-muted-foreground">Moves</div>
             </CardContent>

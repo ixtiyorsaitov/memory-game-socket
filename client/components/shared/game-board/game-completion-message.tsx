@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Trophy, RotateCcw, Frown, Scale } from "lucide-react";
@@ -12,7 +11,6 @@ interface GameCompletionMessageProps {
   opponentPairs: number;
   opponentName: string;
   moves: number;
-  time: number;
   // onResetGame: () => void;
 }
 
@@ -23,15 +21,8 @@ export function GameCompletionMessage({
   opponentPairs,
   opponentName,
   moves,
-  time,
 }: // onResetGame,
 GameCompletionMessageProps) {
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
   if (!isGameComplete) {
     return null;
   }
@@ -84,9 +75,7 @@ GameCompletionMessageProps) {
           )}
         >
           {gameMode === "single"
-            ? `You completed the game in ${moves} moves and ${formatTime(
-                time
-              )}!`
+            ? `You completed the game in ${moves} moves!`
             : `Final Score: You ${matchedPairs} - ${opponentPairs} ${opponentName}`}
         </p>
         {/* {gameMode === "single" && (

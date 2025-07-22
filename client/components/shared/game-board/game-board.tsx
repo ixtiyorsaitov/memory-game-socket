@@ -15,6 +15,8 @@ import { useAuth } from "@/hooks/use-user";
 import GameChat from "./game-chat";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSocket } from "@/components/providers/socket-context";
+import { cardEmojis } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 interface GameBoardProps {
   gameMode: "single" | "online";
@@ -167,22 +169,22 @@ export function GameBoard({
     }
   };
 
-  // const resetGame = () => {
-  //   const shuffledCards = cardEmojis
-  //     .sort(() => Math.random() - 0.5)
-  //     .map((emoji, index) => ({
-  //       id: index,
-  //       emoji,
-  //       isFlipped: false,
-  //       isMatched: false,
-  //     }));
-  //   setCards(shuffledCards);
-  //   setFlippedCards([]);
-  //   setMatchedPairs(0);
-  //   setMoves(0);
-  //   setTime(0);
-  //   setGameStarted(false);
-  // };
+  const resetGame = () => {
+    const shuffledCards = cardEmojis
+      .sort(() => Math.random() - 0.5)
+      .map((emoji, index) => ({
+        id: index,
+        emoji,
+        isFlipped: false,
+        isMatched: false,
+      }));
+    setCards(shuffledCards);
+    setFlippedCards([]);
+    setMatchedPairs(0);
+    setMoves(0);
+    setTime(0);
+    setGameStarted(false);
+  };
 
   const isGameComplete = matchedPairs + opponentPairs === 16;
 
@@ -191,30 +193,26 @@ export function GameBoard({
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          {/* <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              // onClick={onBackToLobby || (() => router.push("/"))}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Lobby
-            </Button>
-
+          <div className="flex items-center gap-4">
             <Badge variant="outline">{user.name}</Badge>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-          </div> */}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        <div
+          className={cn(
+            "grid grid-cols-1 gap-6",
+            gameMode === "online" ? "xl:grid-cols-4" : "xl:grid-cols-3"
+          )}
+        >
           {/* Main Game Area */}
           <div className="xl:col-span-3">
             <GameStats
               gameMode={gameMode}
               matchedPairs={matchedPairs}
               moves={moves}
-              time={time}
               opponentName={opponentName}
               opponentPairs={opponentPairs}
             />
@@ -226,22 +224,21 @@ export function GameBoard({
               opponentPairs={opponentPairs}
               opponentName={opponentName}
               moves={moves}
-              time={time}
               // onResetGame={resetGame}
             />
 
             {/* Reset Button - Only for Single Player */}
-            {/* {gameMode === "single" && (
+            {gameMode === "single" && (
               <div className="flex justify-center mb-6">
                 <Button variant="outline" onClick={resetGame}>
                   <RotateCcw className="h-4 w-4 mr-2" />
                   Reset Game
                 </Button>
               </div>
-            )} */}
+            )}
 
             <MemoryCardsGrid
-              disabled={!queue}
+              disabled={gameMode === "online" ? !queue : false}
               cards={cards}
               onCardClick={handleCardClick}
             />
